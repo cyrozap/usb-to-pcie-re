@@ -28,7 +28,10 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 
-def extract(filename, fw):
+def fw_version_bytes_to_string(version):
+    return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
+
+def extract(filename=None, fw=None, **kwargs):
     split = filename.split('.')
     basename = '.'.join(split[:-1])
     f = open("{}.code.bin".format(basename), "wb")
@@ -37,8 +40,8 @@ def extract(filename, fw):
 
     return 0
 
-def info(filename, fw):
-    version_string = "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*fw.body.firmware.version)
+def info(filename=None, fw=None, **kwargs):
+    version_string = fw_version_bytes_to_string(fw.body.firmware.version)
     print("Firmware version: {}".format(version_string))
 
     usb_ids = fw.header.usb_ids
@@ -47,19 +50,83 @@ def info(filename, fw):
 
     return 0
 
+def raw_info(fw_bin=None, **kwargs):
+    version_string = fw_version_bytes_to_string(fw_bin[0x200:0x200+6])
+    print("Firmware version: {}".format(version_string))
+
+    return 0
+
+def unsupported(*args, **kwargs):
+    print("Error: Command \"{}\" is not supported for image type \"{}\".".format(kwargs.get("command"), kwargs.get("fw_type")), file=sys.stderr)
+
+    return 1
+
 def main():
     commands = {
-        "extract": extract,
-        "info": info,
+        "extract": {
+            "image": extract,
+        },
+        "info": {
+            "image": info,
+            "raw": raw_info,
+        },
     }
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--type", choices=("auto", "image", "raw"), default="auto", help="The image type. Default: auto")
     parser.add_argument("command", choices=commands.keys(), help="Subcommands.")
     parser.add_argument("firmware", type=str, help="The firmware image file.")
     args = parser.parse_args()
 
-    fw = asm236x_fw.Asm236xFw.from_file(args.firmware)
-    return commands[args.command](args.firmware, fw)
+    fw_bin = open(args.firmware, 'rb').read()
+
+    fw_type = args.type
+    if fw_type != "auto":
+        print("Firmware type set to \"{}\".".format(fw_type))
+    else:
+        print("Trying to guess firmware type...")
+        threshold = 3
+        points = 0
+
+        # Is the serial number string present?
+        try:
+            bytes.fromhex(fw_bin[4:4+12].decode('ascii'))
+            points += 1
+        except Exception:
+            pass
+
+        # Is "ASMT" present?
+        try:
+            if fw_bin[0x3c:0x3c+4].decode('ascii') == "ASMT":
+                points += 1
+        except Exception:
+            pass
+
+        # Are the exception vector long jump instructions all present?
+        try:
+            vector_offsets = (0x82, 0x85, 0x8d, 0x95)
+            vectors_present = 0
+            for offset in vector_offsets:
+                vectors_present += 1
+            if vectors_present == len(vector_offsets):
+                points += 1
+        except Exception:
+            pass
+
+        if points >= threshold:
+            fw_type = "image"
+        else:
+            fw_type = "raw"
+        print("Guessed firmware type is \"{}\".".format(fw_type))
+
+    if fw_type == "image":
+        fw = asm236x_fw.Asm236xFw.from_bytes(fw_bin)
+        return commands[args.command].get(fw_type, unsupported)(command=args.command, filename=args.firmware, fw=fw, fw_bin=fw_bin, fw_type=fw_type)
+    elif fw_type == "raw":
+        return commands[args.command].get(fw_type, unsupported)(command=args.command, filename=args.firmware, fw_bin=fw_bin, fw_type=fw_type)
+    else:
+        print("Error: Unknown image type: {}".format(fw_type), file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
