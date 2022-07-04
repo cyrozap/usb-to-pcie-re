@@ -50,8 +50,14 @@ def info(filename=None, fw=None, **kwargs):
     version_string = fw_version_bytes_to_string(fw.body.firmware.version)
     print("Firmware version: {}".format(version_string))
 
-    usb_ids = fw.header.usb_ids
-    print("USB IDs: {:04x}:{:04x}".format(usb_ids.vid, usb_ids.pid))
+    usb_info = fw.header.usb_info
+    print("USB IDs: {:04x}:{:04x}".format(usb_info.id_vendor, usb_info.id_product))
+    print("USB Device Revision: {:04x}".format(usb_info.bcd_device))
+    print("EP0 Manufacturer String: {}".format(fw.header.ep0_manufacturer_string))
+    print("EP0 Product String: {}".format(fw.header.ep0_product_string))
+    print("T10 Manufacturer String: {}".format(fw.header.t10_manufacturer_string))
+    print("T10 Product String: {}".format(fw.header.t10_product_string))
+    print("Serial number: {}".format(fw.header.serial_number))
     print("Image size: {} bytes".format(fw.body.size))
 
     return 0

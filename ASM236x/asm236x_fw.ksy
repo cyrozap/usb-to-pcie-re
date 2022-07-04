@@ -10,50 +10,52 @@ seq:
   - id: body
     type: body
 types:
-  usb_ids:
+  usb_info:
     seq:
-      - id: vid
+      - id: id_vendor
         type: u2
-      - id: pid
+      - id: id_product
+        type: u2
+      - id: bcd_device
         type: u2
   header:
     instances:
       unk0:
         pos: 1
         type: u2
-      unk1:
+      serial_number:
         pos: 4
         type: str
         encoding: ASCII
         size: 12
-      unk2:
+      ep0_manufacturer_string:
         pos: 0x18
         type: str
         encoding: ASCII
         size: 7
-      unk3:
+      t10_manufacturer_string:
         pos: 0x3C
         type: str
         encoding: ASCII
         size: 4
-      unk4:
+      ep0_product_string:
         pos: 0x44
         type: str
         encoding: ASCII
         size: 14
-      unk5:
+      t10_product_string:
         pos: 0x64
         type: str
         encoding: ASCII
         size: 12
-      usb_ids:
+      usb_info:
         pos: 0x74
-        type: usb_ids
+        type: usb_info
       unk7:
-        pos: 0x78
+        pos: 0x7A
         type: u2
         repeat: expr
-        repeat-expr: 4
+        repeat-expr: 3
   body:
     seq:
       - id: size
