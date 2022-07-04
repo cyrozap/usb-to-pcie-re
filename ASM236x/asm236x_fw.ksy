@@ -55,7 +55,15 @@ types:
         pos: 0x7A
         type: u2
         repeat: expr
-        repeat-expr: 3
+        repeat-expr: 2
+      magic:
+        pos: 0x7E
+        type: u1
+        doc: "Must be 0x5A."
+      checksum:
+        pos: 0x7F
+        type: u1
+        doc: "8-bit sum of all the bytes from offset 0x04 through 0x7E, inclusive."
   body:
     seq:
       - id: size

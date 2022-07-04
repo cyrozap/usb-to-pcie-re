@@ -46,7 +46,7 @@ def extract(filename=None, fw=None, **kwargs):
 
     return 0
 
-def info(filename=None, fw=None, **kwargs):
+def info(filename=None, fw=None, fw_bin=None, **kwargs):
     version_string = fw_version_bytes_to_string(fw.body.firmware.version)
     print("Firmware version: {}".format(version_string))
 
@@ -58,6 +58,10 @@ def info(filename=None, fw=None, **kwargs):
     print("T10 Manufacturer String: {}".format(fw.header.t10_manufacturer_string))
     print("T10 Product String: {}".format(fw.header.t10_product_string))
     print("Serial number: {}".format(fw.header.serial_number))
+
+    calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
+    expected_csum = fw.header.checksum
+    print("Header checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
     print("Image size: {} bytes".format(fw.body.size))
 
     return 0
@@ -110,6 +114,13 @@ def main():
         # Is "ASMT" present?
         try:
             if fw_bin[0x3c:0x3c+4].decode('ascii') == "ASMT":
+                points += 1
+        except Exception:
+            pass
+
+        # Is the magic value present?
+        try:
+            if fw_bin[0x7e] == 0x5a:
                 points += 1
         except Exception:
             pass
