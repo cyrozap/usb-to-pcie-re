@@ -34,9 +34,15 @@ def fw_version_bytes_to_string(version):
 def extract(filename=None, fw=None, **kwargs):
     split = filename.split('.')
     basename = '.'.join(split[:-1])
-    f = open("{}.code.bin".format(basename), "wb")
+    dest_name = "{}.code.bin".format(basename)
+
+    print("Extracting {} bytes of firmware code from \"{}\" and writing it to \"{}\"...".format(fw.body.size, filename, dest_name))
+
+    f = open(dest_name, "wb")
     f.write(fw.body.firmware.code)
     f.close()
+
+    print("Done!")
 
     return 0
 
