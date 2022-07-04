@@ -32,7 +32,7 @@ def extract(filename, fw):
     split = filename.split('.')
     basename = '.'.join(split[:-1])
     f = open("{}.code.bin".format(basename), "wb")
-    f.write(fw.body.firmware)
+    f.write(fw.body.firmware.code)
     f.close()
 
     return 0
