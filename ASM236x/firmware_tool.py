@@ -62,8 +62,8 @@ def raw_info(fw_bin=None, **kwargs):
 
     return 0
 
-def unsupported(*args, **kwargs):
-    print("Error: Command \"{}\" is not supported for image type \"{}\".".format(kwargs.get("command"), kwargs.get("fw_type")), file=sys.stderr)
+def unsupported(command=None, fw_type=None, **kwargs):
+    print("Error: Command \"{}\" is not supported for image type \"{}\".".format(command, fw_type), file=sys.stderr)
 
     return 1
 
