@@ -18,24 +18,9 @@ There are several chips on the market that support translating USB to NVMe/PCIe:
 This project will focus on the ASMedia controllers, for now.
 
 
-## Quick start
+## Sub-projects
 
-### Software dependencies
-
-* Python 3
-* [Kaitai Struct Compiler][ksc]
-* [Kaitai Struct Python Runtime][kspr]
-
-### Procedure
-
-1. Install dependencies.
-2. Run `make` to generate the parser code used by `firmware_tool.py`.
-3. Run `./firmware_tool.py` on the `*.hex` firmware update file.
-
-
-## Reverse engineering notes
-
-See [ASM236x/Notes.md](ASM236x/Notes.md).
+* [ASM236x](ASM236x)
 
 
 ## License
@@ -56,7 +41,5 @@ Except where otherwise stated:
 [JMS586A]: https://web.archive.org/web/20220703210408if_/https://www.jmicron.com/file/download/1171/Product+Brief+of+JMS586A+%28Rev.1.00%29.pdf
 [JMS586U]: https://web.archive.org/web/20220703210414if_/https://www.jmicron.com/file/download/1172/Product+Brief+of+JMS586U+%28Rev.1.00%29.pdf
 [RTL9210B]: https://web.archive.org/web/20220407194447/https://www.realtek.com/en/products/communications-network-ics/item/rtl9210b-cg
-[ksc]: https://github.com/kaitai-io/kaitai_struct_compiler
-[kspr]: https://github.com/kaitai-io/kaitai_struct_python_runtime
 [gpl]: COPYING.txt
 [cc-by-sa]: https://creativecommons.org/licenses/by-sa/4.0/
