@@ -22,5 +22,12 @@
       - TX: IC pin 86
 
 
+### IOCrest SY-ENC40231 (ASM2364)
+
+- UART
+  - TX can be accessed at resistor R10 on the pad nearest the ASM2364 IC.
+  - RX can only be accessed on the ASM2364 IC itself.
+
+
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
