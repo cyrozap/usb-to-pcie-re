@@ -28,6 +28,22 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 
+IDLE_TIMER_STRINGS = {
+    0x1: "3 minutes",
+    0x2: "5 minutes",
+    0x3: "10 minutes",
+    0x4: "15 minutes",
+    0x5: "20 minutes",
+    0x6: "30 minutes",
+    0x7: "1 hour",
+    0x8: "2 hours",
+    0x9: "3 hours",
+    0xa: "4 hours",
+    0xb: "5 hours",
+    0xf: "Never",
+}
+
+
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
 
@@ -61,6 +77,7 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("T10 Manufacturer String: {}".format(trim_0xff(fw.header.t10_manufacturer_string)))
     print("T10 Product String: {}".format(trim_0xff(fw.header.t10_product_string)))
     print("Serial number: {}".format(trim_0xff(fw.header.serial_number)))
+    print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
 
     calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
     expected_csum = fw.header.checksum
