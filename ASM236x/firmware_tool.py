@@ -31,6 +31,9 @@ except ModuleNotFoundError:
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
 
+def trim_0xff(string: bytes):
+    return string.rstrip(b'\xff')
+
 def extract(filename=None, fw=None, **kwargs):
     split = filename.split('.')
     basename = '.'.join(split[:-1])
@@ -53,11 +56,11 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     usb_info = fw.header.usb_info
     print("USB IDs: {:04x}:{:04x}".format(usb_info.id_vendor, usb_info.id_product))
     print("USB Device Revision: {:04x}".format(usb_info.bcd_device))
-    print("EP0 Manufacturer String: {}".format(fw.header.ep0_manufacturer_string))
-    print("EP0 Product String: {}".format(fw.header.ep0_product_string))
-    print("T10 Manufacturer String: {}".format(fw.header.t10_manufacturer_string))
-    print("T10 Product String: {}".format(fw.header.t10_product_string))
-    print("Serial number: {}".format(fw.header.serial_number))
+    print("EP0 Manufacturer String: {}".format(trim_0xff(fw.header.ep0_manufacturer_string)))
+    print("EP0 Product String: {}".format(trim_0xff(fw.header.ep0_product_string)))
+    print("T10 Manufacturer String: {}".format(trim_0xff(fw.header.t10_manufacturer_string)))
+    print("T10 Product String: {}".format(trim_0xff(fw.header.t10_product_string)))
+    print("Serial number: {}".format(trim_0xff(fw.header.serial_number)))
 
     calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
     expected_csum = fw.header.checksum

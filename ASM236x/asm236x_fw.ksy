@@ -19,49 +19,29 @@ types:
       - id: bcd_device
         type: u2
   header:
-    instances:
-      unk0:
-        pos: 1
-        type: u2
-      serial_number:
-        pos: 4
-        type: str
-        encoding: ASCII
-        size: 12
-      ep0_manufacturer_string:
-        pos: 0x18
-        type: str
-        encoding: ASCII
-        size: 7
-      t10_manufacturer_string:
-        pos: 0x3C
-        type: str
-        encoding: ASCII
+    seq:
+      - id: unk0
         size: 4
-      ep0_product_string:
-        pos: 0x44
-        type: str
-        encoding: ASCII
-        size: 14
-      t10_product_string:
-        pos: 0x64
-        type: str
-        encoding: ASCII
-        size: 12
-      usb_info:
-        pos: 0x74
+      - id: serial_number
+        size: 20
+      - id: ep0_manufacturer_string
+        size: 36
+      - id: t10_manufacturer_string
+        size: 8
+      - id: ep0_product_string
+        size: 32
+      - id: t10_product_string
+        size: 16
+      - id: usb_info
         type: usb_info
-      unk7:
-        pos: 0x7A
+      - id: unk7
         type: u2
         repeat: expr
         repeat-expr: 2
-      magic:
-        pos: 0x7E
+      - id: magic
         type: u1
         doc: "Must be 0x5A."
-      checksum:
-        pos: 0x7F
+      - id: checksum
         type: u1
         doc: "8-bit sum of all the bytes from offset 0x04 through 0x7E, inclusive."
   body:
