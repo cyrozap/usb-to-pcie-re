@@ -35,38 +35,40 @@ types:
       - id: usb_info
         type: usb_info
       # Offset 0x7a
-      - id: unk7a_74
-        type: b4
+      - id: lp_if_u3
+        type: b2
+      - id: lp_if_idle
+        type: b2
       - id: idle_timer
         type: b4
       # Offset 0x7b
       - id: unk7b_76
         type: b2
-      - id: unk7b_54
+      - id: pcie_lane
         type: b2
-      - id: unk7b_32
+      - id: pcie_speed
         type: b2
-      - id: unk7b_10
+      - id: pcie_aspm
         type: b2
       # Offset 0x7c
       - id: unk7c
         type: u1
       # Offset 0x7d
-      - id: unk7d_7
+      - id: disable_slow_enumeration
         type: b1
-      - id: unk7d_6
+      - id: disable_2tb
         type: b1
-      - id: unk7d_5
+      - id: disable_low_power_mode
         type: b1
-      - id: unk7d_4
+      - id: disable_u1u2
         type: b1
-      - id: unk7d_3
+      - id: disable_wtg
         type: b1
-      - id: unk7d_2
+      - id: disable_two_leds
         type: b1
-      - id: unk7d_1
+      - id: disable_eup
         type: b1
-      - id: unk7d_0
+      - id: disable_usb_removable
         type: b1
       # Offset 0x7e
       - id: magic
