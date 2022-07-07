@@ -11,6 +11,8 @@
 
 ## Hardware information
 
+- CPU
+  - Compatible with the MCS-51 (8051) instruction set.
 - UART
   - 3V3
   - Pins:
