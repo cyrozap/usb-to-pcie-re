@@ -87,6 +87,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
     - `e5 ff 00 07 f0 00`: Write `0xFF` to XDATA at address `0x07F0`.
 - `0xE8`: Reload/restart firmware?
   - `11x`: 11 bytes of padding.
+  - Returns: Nothing.
   - Examples:
     - `e8 00 00 00 00 00 00 00 00 00 00 00`
 
