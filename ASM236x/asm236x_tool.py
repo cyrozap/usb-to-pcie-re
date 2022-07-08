@@ -58,6 +58,11 @@ class Asm236x:
             ret = sgio.execute(self._file, cdb, None, None)
             assert ret == 0
 
+    def reload(self):
+        cdb = bytes.fromhex("e8 00 00 00 00 00 00 00 00 00 00 00")
+        ret = sgio.execute(self._file, cdb, None, None)
+        assert ret == 0
+
     def get_fw_version_data(self):
         return self.read(0x07f0, 6)
 
@@ -119,6 +124,11 @@ def write(args, dev):
 
     return 0
 
+def reload(args, dev):
+    dev.reload()
+
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
@@ -142,6 +152,9 @@ def main():
     parser_write.add_argument("address", type=str, help="The address to start the write to, in hexadecimal.")
     parser_write.add_argument("data", type=str, nargs="+", help="The data bytes to be written, in hexadecimal.")
     parser_write.set_defaults(func=write)
+
+    parser_reload = subparsers.add_parser("reload")
+    parser_reload.set_defaults(func=reload)
 
     args = parser.parse_args()
 
