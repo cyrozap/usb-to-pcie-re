@@ -106,7 +106,7 @@ def read(args, dev):
 
 def write(args, dev):
     start_addr = int(args.address, 16)
-    data = bytes.fromhex("".join(args.data).replace(" ", ""))
+    data = b"".join([bytes.fromhex(x) for x in args.data])
 
     start_ns = time.perf_counter_ns()
     dev.write(start_addr, data)
