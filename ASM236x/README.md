@@ -7,8 +7,11 @@
 ### Software dependencies
 
 * Python 3
-* [Kaitai Struct Compiler][ksc]
-* [Kaitai Struct Python Runtime][kspr]
+* Firmware image parser:
+  * [Kaitai Struct Compiler][ksc]
+  * [Kaitai Struct Python Runtime][kspr]
+* `asm236x_tool.py`:
+  * [cython-sgio][cython-sgio]
 
 
 ### Procedure
@@ -25,3 +28,4 @@ See [Notes.md](Notes.md).
 
 [ksc]: https://github.com/kaitai-io/kaitai_struct_compiler
 [kspr]: https://github.com/kaitai-io/kaitai_struct_python_runtime
+[cython-sgio]: https://pypi.org/project/cython-sgio/
