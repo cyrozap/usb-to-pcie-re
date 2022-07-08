@@ -52,6 +52,12 @@ class Asm236x:
 
         return bytes(data)
 
+    def write(self, start_addr, data):
+        for offset, value in enumerate(data):
+            cdb = struct.pack('>BBBHB', 0xe5, value, 0x00, start_addr + offset, 0x00)
+            ret = sgio.execute(self._file, cdb, None, None)
+            assert ret == 0
+
     def get_fw_version_data(self):
         return self.read(0x07f0, 6)
 
@@ -80,6 +86,39 @@ def info(args, dev):
 
     return 0
 
+def read(args, dev):
+    start_addr = int(args.address, 16)
+    read_len = args.length
+    stride = args.stride
+    assert stride > 0
+    assert stride < 256
+
+    start_ns = time.perf_counter_ns()
+    data = dev.read(start_addr, read_len, stride)
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
+
+    print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(start_addr, start_addr+read_len, data.hex(), data))
+
+    return 0
+
+def write(args, dev):
+    start_addr = int(args.address, 16)
+    data = bytes.fromhex("".join(args.data).replace(" ", ""))
+
+    start_ns = time.perf_counter_ns()
+    dev.write(start_addr, data)
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Wrote {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
+
+    print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(start_addr, start_addr+len(data), data.hex(), data))
+
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
@@ -92,6 +131,17 @@ def main():
 
     parser_info = subparsers.add_parser("info")
     parser_info.set_defaults(func=info)
+
+    parser_read = subparsers.add_parser("read")
+    parser_read.add_argument("-s", "--stride", type=int, default=255, help="The number of bytes to read with each SCSI command. Min: 1, Max: 255, Default: 255")
+    parser_read.add_argument("-l", "--length", type=int, default=1, help="The total number of bytes to read. Default: 1")
+    parser_read.add_argument("address", type=str, help="The address to start the read from, in hexadecimal.")
+    parser_read.set_defaults(func=read)
+
+    parser_write = subparsers.add_parser("write")
+    parser_write.add_argument("address", type=str, help="The address to start the write to, in hexadecimal.")
+    parser_write.add_argument("data", type=str, nargs="+", help="The data bytes to be written, in hexadecimal.")
+    parser_write.set_defaults(func=write)
 
     args = parser.parse_args()
 
