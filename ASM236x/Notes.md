@@ -15,6 +15,7 @@
   - Compatible with the MCS-51 (8051) instruction set.
 - UART
   - 3V3
+  - 921600(?) 8N1
   - Pins:
     - ASM2362
       - RX: IC pin ?
