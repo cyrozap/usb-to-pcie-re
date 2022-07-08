@@ -35,33 +35,48 @@ class Asm236x:
     def __init__(self, dev_path):
         self._file = os.fdopen(os.open(dev_path, os.O_RDWR | os.O_NONBLOCK))
 
+    def read(self, start_addr, read_len, stride=255):
+        data = bytearray(read_len)
+
+        for i in range(0, read_len, stride):
+            remaining = read_len - i
+            buf_len = min(stride, remaining)
+
+            cdb = struct.pack('>BBBHB', 0xe4, buf_len, 0x00, start_addr + i, 0x00)
+
+            buf = bytearray(buf_len)
+            ret = sgio.execute(self._file, cdb, None, buf)
+            assert ret == 0
+
+            data[i:i+buf_len] = buf
+
+        return bytes(data)
+
+    def get_fw_version_data(self):
+        return self.read(0x07f0, 6)
+
+
+def fw_version_bytes_to_string(version):
+    return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
 
 def dump(args, dev):
     start_addr = 0x0000
     read_len = 1 << 16
     stride = 128
 
-    data = bytearray(read_len)
-
     start_ns = time.perf_counter_ns()
-    for i in range(0, read_len, stride):
-        remaining = read_len - i
-        buf_len = min(stride, remaining)
-
-        cdb = struct.pack('>BBBHB', 0xe4, buf_len, 0x00, start_addr + i, 0x00)
-
-        buf = bytearray(buf_len)
-        ret = sgio.execute(dev._file, cdb, None, buf)
-        assert ret == 0
-
-        data[i:i+buf_len] = buf
-
+    data = dev.read(start_addr, read_len, stride)
     end_ns = time.perf_counter_ns()
     elapsed = end_ns - start_ns
     print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
     open(args.dump_file, 'wb').write(data)
+
+    return 0
+
+def info(args, dev):
+    print("Firmware version: {}".format(fw_version_bytes_to_string(dev.get_fw_version_data())))
 
     return 0
 
@@ -74,6 +89,9 @@ def main():
     parser_dump = subparsers.add_parser("dump")
     parser_dump.add_argument("dump_file", help="The file to write the memory dump output to.")
     parser_dump.set_defaults(func=dump)
+
+    parser_info = subparsers.add_parser("info")
+    parser_info.set_defaults(func=info)
 
     args = parser.parse_args()
 
