@@ -69,6 +69,8 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
     - `e0 00 00 00 00 00`: Read image 0
     - `e0 01 00 00 00 00`: Read image 1
 - `0xE1`: Write configuration data?
+- `0xE2`
+- `0xE3`
 - `0xE4`: XDATA read.
   - `B`: The number of bytes to read, max 255.
   - `x`: Padding byte.
@@ -86,6 +88,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - Returns: Nothing.
   - Examples:
     - `e5 ff 00 07 f0 00`: Write `0xFF` to XDATA at address `0x07F0`.
+- `0xE6`
 - `0xE8`: Reload/restart firmware?
   - `11x`: 11 bytes of padding.
   - Returns: Nothing.
