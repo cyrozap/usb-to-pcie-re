@@ -1,0 +1,99 @@
+
+Bus xxx Device yyy: ID 174c:2364 ASMedia Technology Inc. AS2360
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               3.20
+  bDeviceClass            0 
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0         9
+  idVendor           0x174c ASMedia Technology Inc.
+  idProduct          0x2364 
+  bcdDevice            0.01
+  iManufacturer           2 ASMedia
+  iProduct                3 AS2360
+  iSerial                 1 00000000000000000000
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength       0x002c
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xc0
+      Self Powered
+    MaxPower                0mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk-Only
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 1024 bytes
+        bInterval               0
+        bMaxBurst              15
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x02  EP 2 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0400  1x 1024 bytes
+        bInterval               0
+        bMaxBurst              15
+Binary Object Store Descriptor:
+  bLength                 5
+  bDescriptorType        15
+  wTotalLength       0x002a
+  bNumDeviceCaps          3
+  USB 2.0 Extension Device Capability:
+    bLength                 7
+    bDescriptorType        16
+    bDevCapabilityType      2
+    bmAttributes   0x0000f41e
+      BESL Link Power Management (LPM) Supported
+    BESL value     1024 us 
+    Deep BESL value    61440 us 
+  SuperSpeed USB Device Capability:
+    bLength                10
+    bDescriptorType        16
+    bDevCapabilityType      3
+    bmAttributes         0x00
+    wSpeedsSupported   0x000e
+      Device can operate at Full Speed (12Mbps)
+      Device can operate at High Speed (480Mbps)
+      Device can operate at SuperSpeed (5Gbps)
+    bFunctionalitySupport   1
+      Lowest fully-functional device speed is Full Speed (12Mbps)
+    bU1DevExitLat          10 micro seconds
+    bU2DevExitLat        2047 micro seconds
+  SuperSpeedPlus USB Device Capability:
+    bLength                20
+    bDescriptorType        16
+    bDevCapabilityType     10
+    bmAttributes         0x00000001
+      Sublink Speed Attribute count 1
+      Sublink Speed ID count 0
+    wFunctionalitySupport   0x1100
+    bmSublinkSpeedAttr[0]   0x000a4030
+      Speed Attribute ID: 0 10Gb/s Symmetric RX SuperSpeedPlus
+    bmSublinkSpeedAttr[1]   0x000a40b0
+      Speed Attribute ID: 0 10Gb/s Symmetric TX SuperSpeedPlus
+Device Status:     0x0001
+  Self Powered
