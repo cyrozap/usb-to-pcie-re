@@ -43,6 +43,12 @@ IDLE_TIMER_STRINGS = {
     0xf: "Never",
 }
 
+PCIE_SPEEDS = {
+    0: (1, "2.5"),
+    1: (2, "5"),
+    2: (3, "8"),
+}
+
 
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
@@ -78,6 +84,7 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("T10 Product String: {}".format(trim_0xff(fw.header.t10_product_string)))
     print("Serial number: {}".format(trim_0xff(fw.header.serial_number)))
     print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
+    print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed, (3, "8"))))
 
     calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
     expected_csum = fw.header.checksum
