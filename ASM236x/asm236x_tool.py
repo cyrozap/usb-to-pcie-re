@@ -35,6 +35,16 @@ class Asm236x:
     def __init__(self, dev_path):
         self._file = os.fdopen(os.open(dev_path, os.O_RDWR | os.O_NONBLOCK))
 
+    def flash_dump(self, read_len):
+        data = bytearray(read_len)
+
+        cdb = struct.pack('>BBI', 0xe2, 0x00, read_len)
+
+        ret = sgio.execute(self._file, cdb, None, data)
+        assert ret == 0
+
+        return bytes(data)
+
     def read(self, start_addr, read_len, stride=255):
         data = bytearray(read_len)
 
@@ -83,6 +93,20 @@ def dump(args, dev):
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
     open(args.dump_file, 'wb').write(data)
+
+    return 0
+
+def flash_dump(args, dev):
+    read_len = args.length
+
+    start_ns = time.perf_counter_ns()
+    data = dev.flash_dump(read_len)
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
+
+    open(args.flash_dump_file, 'wb').write(data)
 
     return 0
 
@@ -176,6 +200,11 @@ def main():
     parser_dump = subparsers.add_parser("dump")
     parser_dump.add_argument("dump_file", help="The file to write the memory dump output to.")
     parser_dump.set_defaults(func=dump)
+
+    parser_flash_dump = subparsers.add_parser("flash_dump")
+    parser_flash_dump.add_argument("-l", "--length", type=int, default=512*1024, help="The total number of bytes to read from flash. Default: 524288")
+    parser_flash_dump.add_argument("flash_dump_file", help="The file to write the flash dump output to.")
+    parser_flash_dump.set_defaults(func=flash_dump)
 
     parser_info = subparsers.add_parser("info")
     parser_info.set_defaults(func=info)
