@@ -86,10 +86,13 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
     print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed, (3, "8"))))
 
+    print("Header magic: Expected: 0x5a, Actual: 0x{:02x}".format(fw.header.magic))
     calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
     expected_csum = fw.header.checksum
     print("Header checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
+
     print("Image size: {} bytes".format(fw.body.size))
+    print("Image magic: Expected: 0x5a or 0x4b, Actual: 0x{:02x}".format(fw.body.magic))
     calculated_csum = sum(fw.body.firmware.code) & 0xff
     expected_csum = fw.body.checksum
     print("Image checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))

@@ -85,7 +85,7 @@ types:
       - id: firmware
         type: firmware
         size: size
-      - id: unk
+      - id: magic
         type: u1
       - id: checksum
         type: u1
