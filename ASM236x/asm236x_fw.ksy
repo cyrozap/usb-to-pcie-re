@@ -85,8 +85,11 @@ types:
       - id: firmware
         type: firmware
         size: size
-      - id: crc16_maybe
-        type: u2
+      - id: unk
+        type: u1
+      - id: checksum
+        type: u1
+        doc: "8-bit sum of all the code bytes."
     types:
       firmware:
         seq:

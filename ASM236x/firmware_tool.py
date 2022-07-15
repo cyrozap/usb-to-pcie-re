@@ -90,6 +90,9 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     expected_csum = fw.header.checksum
     print("Header checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
     print("Image size: {} bytes".format(fw.body.size))
+    calculated_csum = sum(fw.body.firmware.code) & 0xff
+    expected_csum = fw.body.checksum
+    print("Image checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
 
     return 0
 
