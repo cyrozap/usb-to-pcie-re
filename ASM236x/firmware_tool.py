@@ -49,6 +49,13 @@ PCIE_SPEEDS = {
     2: (3, "8"),
 }
 
+EXPECTED_HEADER_MAGIC = 0x5a
+
+BODY_MAGICS = {
+    0x4b: "ASM2364",
+    0x5a: "ASM2362",
+}
+
 
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
@@ -86,16 +93,36 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
     print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed, (3, "8"))))
 
-    print("Header magic: Expected: 0x5a, Actual: 0x{:02x}".format(fw.header.magic))
+    header_magic_messages = {
+        True: "OK (0x{:02x})".format(fw.header.magic),
+        False: "ERROR: Expected 0x{:02x}, got 0x{:02x}.".format(EXPECTED_HEADER_MAGIC, fw.header.magic),
+    }
+    print("Header magic: {}".format(header_magic_messages[fw.header.magic == EXPECTED_HEADER_MAGIC]))
+
     calculated_csum = sum(fw_bin[0x04:0x7f]) & 0xff
     expected_csum = fw.header.checksum
-    print("Header checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
+    header_checksum_messages = {
+        True: "OK (0x{:02x})".format(calculated_csum),
+        False: "ERROR: Expected 0x{:02x}, calculated: 0x{:02x}.".format(expected_csum, calculated_csum),
+    }
+    print("Header checksum: {}".format(header_checksum_messages[expected_csum == calculated_csum]))
 
     print("Image size: {} bytes".format(fw.body.size))
-    print("Image magic: Expected: 0x5a or 0x4b, Actual: 0x{:02x}".format(fw.body.magic))
+
+    formatted_magics = "[{}]".format(", ".join("0x{:02x}".format(x) for x in BODY_MAGICS.keys()))
+    image_magic_messages = {
+        True: "OK (0x{:02x}: {})".format(fw.body.magic, BODY_MAGICS.get(fw.body.magic, "Unknown")),
+        False: "ERROR: Expected one of {}, got 0x{:02x}.".format(formatted_magics, fw.body.magic),
+    }
+    print("Image magic: {}".format(image_magic_messages[fw.body.magic in BODY_MAGICS.keys()]))
+
     calculated_csum = sum(fw.body.firmware.code) & 0xff
     expected_csum = fw.body.checksum
-    print("Image checksum: Expected: 0x{:02x}, Calculated: 0x{:02x}".format(expected_csum, calculated_csum))
+    firmware_checksum_messages = {
+        True: "OK (0x{:02x})".format(calculated_csum),
+        False: "ERROR: Expected 0x{:02x}, calculated: 0x{:02x}.".format(expected_csum, calculated_csum),
+    }
+    print("Image checksum: {}".format(firmware_checksum_messages[expected_csum == calculated_csum]))
 
     return 0
 
