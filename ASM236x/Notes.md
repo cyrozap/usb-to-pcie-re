@@ -24,6 +24,32 @@
       - RX: IC pin 87
       - TX: IC pin 86
 
+- Memory maps
+  - ASM2364
+    - Regions
+      - `0x0000-0x5FFF`: 24 kB XRAM
+      - `0x6000-0x6FFF`: 4 kB of unused address space (zero-filled, read-only)
+      - `0x7000-0x7FFF`: 4 kB XRAM (SPI flash controller read/write buffer)
+      - `0x8000-0x8FFF`: 4 kB XRAM (USB/SCSI buffers?)
+      - `0x9000-0x9DFF`: MMIO peripherals (USB?)
+      - `0x9E00-0x9FFF`: 512 B XRAM (USB control transfer buffer)
+      - `0xA000-0xAFFF`: 4 kB XRAM
+      - `0xB000-0xB7FF`: MMIO peripherals (PCIe?)
+      - `0xB800-0xBFFF`: 2 kB XRAM
+      - `0xC000-0xCFFF`: MMIO peripherals (UART, flash controller, timers, etc.)
+      - `0xD000-0xD3FF`: 1 kB XRAM
+      - `0xD400-0xD7FF`: Mirror of XRAM `0xD000-0xD3FF`
+      - `0xD800-0xDFFF`: 2 kB XRAM (USB/SCSI buffers?)
+      - `0xE000-0xE2FF`: Mirror of XRAM `0xD800-0xDAFF`
+      - `0xE300-0xE7FF`: MMIO peripherals
+      - `0xE800-0xE9FF`: 512 B XRAM
+      - `0xEA00-0xEBFF`: Mirror of XRAM `0xE800-0xE9FF`
+      - `0xEC00-0xEDFF`: Mirror of XRAM `0xE800-0xE9FF`
+      - `0xEE00-0xEFFF`: Mirror of XRAM `0xE800-0xE9FF`
+      - `0xF000-0xFFFF`: 4 kB XRAM (USB/PCIe buffer?)
+    - Peripherals
+      - `0xC000`: UART, same memory map as the one on the USB host controllers (but changing the divisor doesn't work for some reason...)
+
 
 ### IOCrest SY-ENC40231 (ASM2364)
 
