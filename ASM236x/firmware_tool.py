@@ -49,6 +49,11 @@ PCIE_SPEEDS = {
     2: (3, "8"),
 }
 
+PCIE_LANES = {
+    0: "1",
+    1: "2",
+}
+
 EXPECTED_HEADER_MAGIC = 0x5a
 
 BODY_MAGICS = {
@@ -91,6 +96,7 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("T10 Product String: {}".format(trim_0xff(fw.header.t10_product_string)))
     print("Serial number: {}".format(trim_0xff(fw.header.serial_number)))
     print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
+    print("PCIe Lanes: {}".format(PCIE_LANES.get(fw.header.pcie_lane, "Max supported by chip")))
     print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed, (3, "8"))))
 
     header_magic_messages = {
