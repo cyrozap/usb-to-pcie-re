@@ -98,7 +98,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
 - `0xE2`: Flash read.
   - `B`: Unknown.
   - `>I`: Number of bytes to read from flash.
-  - Returns: N bytes of flash data.
+  - Returns: N bytes of flash data starting from address zero.
 - `0xE3`
 - `0xE4`: XDATA read.
   - `B`: The number of bytes to read, max 255.
