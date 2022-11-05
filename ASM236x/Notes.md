@@ -99,7 +99,10 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - `B`: Unknown.
   - `>I`: Number of bytes to read from flash.
   - Returns: N bytes of flash data starting from address zero.
-- `0xE3`
+- `0xE3`: Firmware write.
+  - `B`: Unknown.
+  - `>I`: Number of bytes to write to flash.
+  - Payload: The data to write to flash starting at address 0x80.
 - `0xE4`: XDATA read.
   - `B`: The number of bytes to read, max 255.
   - `x`: Padding byte.

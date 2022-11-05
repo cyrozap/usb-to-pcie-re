@@ -45,6 +45,12 @@ class Asm236x:
 
         return bytes(data)
 
+    def fw_write(self, fw_data):
+        cdb = struct.pack('>BBI', 0xe3, 0x00, len(fw_data))
+
+        ret = sgio.execute(self._file, cdb, fw_data, None)
+        assert ret == 0
+
     def read(self, start_addr, read_len, stride=255):
         data = bytearray(read_len)
 
@@ -107,6 +113,51 @@ def flash_dump(args, dev):
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
     open(args.flash_dump_file, 'wb').write(data)
+
+    return 0
+
+def fw_write(args, dev):
+    fw_file = open(args.fw_file, 'rb').read()
+
+    fw_data = fw_file
+    if not args.raw:
+        fw_size = struct.unpack_from('<H', fw_file, 0x80)[0]
+        fw_data = fw_file[0x80:0x80+fw_size+8]
+        fw_magic = fw_data[2+fw_size+0]
+        if fw_magic not in (0x4b, 0x5a):
+            print("Error: Bad FW magic. Expected 0x4b or 0x5a, got 0x{:02x}.".format(fw_magic))
+            return 1
+        fw_checksum_calc = sum(fw_data[2:2+fw_size]) & 0xff
+        fw_checksum = fw_data[2+fw_size+1]
+        if fw_checksum_calc != fw_checksum:
+            print("Error: Bad FW checksum. Expected 0x{:02x}, calculated 0x{:02x}.".format(fw_checksum, fw_checksum_calc))
+            return 1
+
+    start_ns = time.perf_counter_ns()
+    data = dev.fw_write(fw_data)
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Wrote {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(fw_data), elapsed/1e9, int(len(fw_data)*1e9) // elapsed))
+
+    start_ns = time.perf_counter_ns()
+    rb_data = dev.flash_dump(0x80 + len(fw_data))
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Read back {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(rb_data), elapsed/1e9, int(len(rb_data)*1e9) // elapsed))
+
+    errors = 0
+    for i in range(len(fw_data)):
+        rb_byte = rb_data[0x80:][i]
+        fw_byte = fw_data[i]
+        if rb_byte != fw_byte:
+            errors += 1
+            print("Error: Bad data at flash address 0x{:08x} (firmware offset 0x{:08x}): Expected 0x{:02x}, read 0x{:02x}.".format(0x80 + i, i, fw_byte, rb_byte))
+
+    if errors > 0:
+        print("Error: Verification failed with {} errors!".format(errors))
+        return 1
 
     return 0
 
@@ -205,6 +256,11 @@ def main():
     parser_flash_dump.add_argument("-l", "--length", type=int, default=512*1024, help="The total number of bytes to read from flash. Default: 524288")
     parser_flash_dump.add_argument("flash_dump_file", help="The file to write the flash dump output to.")
     parser_flash_dump.set_defaults(func=flash_dump)
+
+    parser_fw_write = subparsers.add_parser("fw_write")
+    parser_fw_write.add_argument("-r", "--raw", action='store_true', default=False, help="Write raw flash data, not a parsed firmware image. Default: False")
+    parser_fw_write.add_argument("fw_file", help="The firmware file to write to flash.")
+    parser_fw_write.set_defaults(func=fw_write)
 
     parser_info = subparsers.add_parser("info")
     parser_info.set_defaults(func=info)
