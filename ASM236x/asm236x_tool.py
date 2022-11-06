@@ -121,17 +121,19 @@ def fw_write(args, dev):
 
     fw_data = fw_file
     if not args.raw:
-        fw_size = struct.unpack_from('<H', fw_file, 0x80)[0]
-        fw_data = fw_file[0x80:0x80+fw_size+8]
-        fw_magic = fw_data[2+fw_size+0]
-        if fw_magic not in (0x4b, 0x5a):
-            print("Error: Bad FW magic. Expected 0x4b or 0x5a, got 0x{:02x}.".format(fw_magic))
-            return 1
-        fw_checksum_calc = sum(fw_data[2:2+fw_size]) & 0xff
-        fw_checksum = fw_data[2+fw_size+1]
-        if fw_checksum_calc != fw_checksum:
-            print("Error: Bad FW checksum. Expected 0x{:02x}, calculated 0x{:02x}.".format(fw_checksum, fw_checksum_calc))
-            return 1
+        fw_data = fw_file[0x80:]
+
+    fw_size = struct.unpack_from('<H', fw_data, 0)[0]
+    fw_data = fw_data[:fw_size+8]
+    fw_magic = fw_data[2+fw_size+0]
+    if fw_magic not in (0x4b, 0x5a):
+        print("Error: Bad FW magic. Expected 0x4b or 0x5a, got 0x{:02x}.".format(fw_magic))
+        return 1
+    fw_checksum_calc = sum(fw_data[2:2+fw_size]) & 0xff
+    fw_checksum = fw_data[2+fw_size+1]
+    if fw_checksum_calc != fw_checksum:
+        print("Error: Bad FW checksum. Expected 0x{:02x}, calculated 0x{:02x}.".format(fw_checksum, fw_checksum_calc))
+        return 1
 
     start_ns = time.perf_counter_ns()
     data = dev.fw_write(fw_data)
