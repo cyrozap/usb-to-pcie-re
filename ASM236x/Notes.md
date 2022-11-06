@@ -58,6 +58,13 @@
   - RX can only be accessed on the ASM2364 IC itself.
 
 
+### ORICO M2PVC3-G20 (ASM2364)
+
+- UART
+  - TX can be accessed at resistor R18 on the pad nearest the ASM2364 IC.
+  - RX can only be accessed on the ASM2364 IC itself.
+
+
 ## USB protocol
 
 Everything is done over custom SCSI commands. Commands are documented in the
