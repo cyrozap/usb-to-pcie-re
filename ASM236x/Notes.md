@@ -128,11 +128,14 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - Examples:
     - `e5 ff 00 07 f0 00`: Write `0xFF` to XDATA at address `0x07F0`.
 - `0xE6`
-- `0xE8`: Reload/restart firmware?
-  - `11x`: 11 bytes of padding.
+- `0xE8`: Reset
+  - `B`: The type of reset to perform. `0x00` for CPU reset, `0x01` for some
+    kind of "soft"/PCIe reset?
+  - `10x`: 10 bytes of padding.
   - Returns: Nothing.
   - Examples:
     - `e8 00 00 00 00 00 00 00 00 00 00 00`
+    - `e8 01 00 00 00 00 00 00 00 00 00 00`
 
 
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
