@@ -1,0 +1,3 @@
+https://plugable.s3.amazonaws.com/bin/Realtek/USBC-NVME_RealtekFirmware202003.zip
+https://media.plugable.com/downloads/drivers/products/usbc-nvme/usbc-nvme_realtekfirmware202101.zip
+https://media.plugable.com/downloads/drivers/products/usbc-nvme/usbc-nvme_realtekfirmware202112.zip

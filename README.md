@@ -21,6 +21,7 @@ This project will focus on the ASMedia controllers, for now.
 ## Sub-projects
 
 * [ASM236x](ASM236x)
+* [RTL921x](RTL921x)
 
 
 ## License
