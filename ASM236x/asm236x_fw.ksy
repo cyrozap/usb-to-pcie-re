@@ -46,10 +46,14 @@ types:
         type: b2
       - id: pcie_lane
         type: b2
+        enum: pcie_lane
       - id: pcie_speed
         type: b2
+        enum: pcie_speed
       - id: pcie_aspm
         type: b2
+        enum: pcie_aspm
+        doc: "ASPM disable bits. Clearing both bits enables L0s and L1 entry. Setting bit 0 disables L0s entry, setting bit 1 disables L1 entry. Setting both bits sets ASPM to the default for the form factor, which in many cases will mean ASPM is disabled."
       # Offset 0x7c
       - id: unk7c
         type: u1
@@ -78,6 +82,22 @@ types:
       - id: checksum
         type: u1
         doc: "8-bit sum of all the bytes from offset 0x04 through 0x7E, inclusive."
+    enums:
+      pcie_lane:
+        0: x1
+        1: x2
+        2: x4
+        3: default
+      pcie_speed:
+        0: gen_1
+        1: gen_2
+        2: gen_3
+        3: max
+      pcie_aspm:
+        0: l0s_and_l1_entry_enabled
+        1: l1_entry_enabled
+        2: l0s_entry_enabled
+        3: default
   body:
     seq:
       - id: size
