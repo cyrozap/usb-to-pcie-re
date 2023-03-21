@@ -24,14 +24,29 @@ types:
         size: 4
       - id: serial_number
         size: 20
+        type: str
+        terminator: 0xff
+        encoding: "UTF-8"
       - id: ep0_manufacturer_string
         size: 36
+        type: str
+        terminator: 0xff
+        encoding: "UTF-8"
       - id: t10_manufacturer_string
         size: 8
+        type: str
+        terminator: 0xff
+        encoding: "UTF-8"
       - id: ep0_product_string
         size: 32
+        type: str
+        terminator: 0xff
+        encoding: "UTF-8"
       - id: t10_product_string
         size: 16
+        type: str
+        terminator: 0xff
+        encoding: "UTF-8"
       - id: usb_info
         type: usb_info
       # Offset 0x7a
