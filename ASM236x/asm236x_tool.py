@@ -170,7 +170,7 @@ class Asm236x:
 
         b284 = self.read(0xB284, 1)[0]
         #print("0xB284: 0x{:02x}".format(b284))
-        assert b284 & 0x01
+        b284_bit_0 = b284 & 0x01
 
         completion = struct.unpack('>III', self.read(0xB224, 12))
         #print("Completion TLP: 0x{:08x} 0x{:08x} 0x{:08x}".format(*completion))
@@ -183,8 +183,9 @@ class Asm236x:
             0b100: "Completer Abort (CA)",
         }
         status = (completion[1] >> 13) & 0x7
-        if status:
-            raise Exception("Completion status: {}".format(status_map.get(status, "Reserved (0b{:03b})".format(status))))
+        if status or not b284_bit_0:
+            raise Exception("Completion status: {}, 0xB284 bit 0: {}".format(
+                status_map.get(status, "Reserved (0b{:03b})".format(status)), b284_bit_0))
 
         return struct.unpack('>I', self.read(0xB220, 4))[0]
 
