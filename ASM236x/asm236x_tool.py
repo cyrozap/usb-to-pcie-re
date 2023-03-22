@@ -45,6 +45,14 @@ class Asm236x:
 
         return bytes(data)
 
+    def config_write(self, config_data):
+        assert len(config_data) == 128
+
+        cdb = struct.pack('>B15x', 0xe1)
+
+        ret = sgio.execute(self._file, cdb, config_data, None)
+        assert ret == 0
+
     def fw_write(self, fw_data):
         cdb = struct.pack('>BBI', 0xe3, 0x00, len(fw_data))
 
@@ -119,9 +127,22 @@ def flash_dump(args, dev):
 def fw_write(args, dev):
     fw_file = open(args.fw_file, 'rb').read()
 
+    config_data = b''
     fw_data = fw_file
     if not args.raw:
+        config_data = b'\xff' * 4 + fw_file[4:0x80]
         fw_data = fw_file[0x80:]
+
+    if config_data:
+        config_magic = config_data[-2]
+        if config_magic != 0x5a:
+            print("Error: Bad config magic. Expected 0x5a, got 0x{:02x}.".format(fw_magic))
+            return 1
+        config_checksum = config_data[-1]
+        config_checksum_calc = sum(config_data[4:-1]) & 0xff
+        if config_checksum_calc != config_checksum:
+            print("Error: Bad config checksum. Expected 0x{:02x}, calculated 0x{:02x}.".format(config_checksum, config_checksum_calc))
+            return 1
 
     fw_size = struct.unpack_from('<H', fw_data, 0)[0]
     fw_data = fw_data[:fw_size+8]
@@ -134,6 +155,14 @@ def fw_write(args, dev):
     if fw_checksum_calc != fw_checksum:
         print("Error: Bad FW checksum. Expected 0x{:02x}, calculated 0x{:02x}.".format(fw_checksum, fw_checksum_calc))
         return 1
+
+    if config_data:
+        start_ns = time.perf_counter_ns()
+        data = dev.config_write(config_data)
+        end_ns = time.perf_counter_ns()
+        elapsed = end_ns - start_ns
+        print("Wrote {} bytes in {:.6f} seconds ({} bytes per second).".format(
+            len(config_data), elapsed/1e9, int(len(config_data)*1e9) // elapsed))
 
     start_ns = time.perf_counter_ns()
     data = dev.fw_write(fw_data)
@@ -150,6 +179,15 @@ def fw_write(args, dev):
         len(rb_data), elapsed/1e9, int(len(rb_data)*1e9) // elapsed))
 
     errors = 0
+    if config_data:
+        for i in range(4, len(config_data)):
+            rb_byte = rb_data[i]
+            config_byte = config_data[i]
+            if rb_byte != config_byte:
+                errors += 1
+                print("Error: Bad data at flash address 0x{:08x} (config offset 0x{:08x}): Expected 0x{:02x}, read 0x{:02x}.".format(
+                    i, i, config_byte, rb_byte))
+
     for i in range(len(fw_data)):
         rb_byte = rb_data[0x80:][i]
         fw_byte = fw_data[i]
