@@ -90,6 +90,48 @@ class Asm236x:
     def get_fw_version_data(self):
         return self.read(0x07f0, 6)
 
+    def flash_read(self, start_addr, read_len, stride=128):
+        data = bytearray(read_len)
+
+        for i in range(0, read_len, stride):
+            remaining = read_len - i
+            buf_len = min(stride, remaining)
+
+            flash_addr = start_addr + i
+            flash_addr_lo = flash_addr & 0xff
+            flash_addr_md = (flash_addr >> 8) & 0xff
+            flash_addr_hi = (flash_addr >> 16) & 0xff
+
+            # Set FLASH_CON_MODE to read, with normal I/O config.
+            self.write(0xC8AD, bytes([0x00]))
+
+            # Set FLASH_CON_BUF_OFFSET to zero.
+            self.write(0xC8AE, struct.pack('>H', 0x0000))
+
+            # Set FLASH_CON_ADDR_LEN_MAYBE to 3.
+            self.write(0xC8AC, bytes([0x03]))
+
+            # Set the flash address.
+            self.write(0xC8A1, bytes([flash_addr_lo]))
+            self.write(0xC8A2, bytes([flash_addr_md]))
+            self.write(0xC8AB, bytes([flash_addr_hi]))
+
+            # Set FLASH_CON_DATA_LEN to the number of bytes to read.
+            self.write(0xC8A3, struct.pack('>H', buf_len))
+
+            # Set FLASH_CON_CSR bit 0 to start the read.
+            self.write(0xC8A9, bytes([0x01]))
+
+            # Wait for read to finish.
+            while self.read(0xC8A9, 1)[0] & 1:
+                continue
+
+            buf = self.read(0x7000, buf_len)
+
+            data[i:i+buf_len] = buf
+
+        return bytes(data)
+
     def pcie_cfg_read(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1):
         assert bus >> 8 == 0
         assert dev >> 5 == 0
@@ -364,6 +406,24 @@ def memtest(args, dev):
 
     return 0
 
+def flash_read(args, dev):
+    start_addr = int(args.address, 16)
+    read_len = args.length
+    stride = args.stride
+    assert stride > 0
+    assert stride <= 4096
+
+    start_ns = time.perf_counter_ns()
+    data = dev.flash_read(start_addr, read_len, stride)
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
+
+    print("FLASH[0x{:06X}:0x{:06X}]: {} {}".format(start_addr, start_addr+read_len, data.hex(), data))
+
+    return 0
+
 def pcie(args, dev):
     byte_addr = int(args.address, 16)
     dword_addr = byte_addr // 4
@@ -418,6 +478,12 @@ def main():
     parser_memtest.add_argument("address", type=str, help="The address to start the test from, in hexadecimal.")
     parser_memtest.add_argument("length", type=int, default=1, help="The total number of bytes to test. Default: 1")
     parser_memtest.set_defaults(func=memtest)
+
+    parser_flash_read = subparsers.add_parser("flash_read")
+    parser_flash_read.add_argument("-s", "--stride", type=int, default=128, help="The number of bytes to read from flash with each internal flash command. Min: 1, Max: 4096, Default: 128")
+    parser_flash_read.add_argument("-l", "--length", type=int, default=1, help="The total number of bytes to read from flash. Default: 1")
+    parser_flash_read.add_argument("address", type=str, help="The flash address to start the read from, in hexadecimal.")
+    parser_flash_read.set_defaults(func=flash_read)
 
     parser_pcie = subparsers.add_parser("pcie")
     parser_pcie.add_argument("address", type=str, help="The address to read from, in hexadecimal.")
