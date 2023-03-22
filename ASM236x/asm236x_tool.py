@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # asm236x_tool.py - A tool to interact with ASM236x devices over USB.
-# Copyright (C) 2022  Forest Crossman <cyrozap@gmail.com>
+# Copyright (C) 2022-2023  Forest Crossman <cyrozap@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -190,6 +190,19 @@ def write(args, dev):
     start_addr = int(args.address, 16)
     data = b"".join([bytes.fromhex(x) for x in args.data])
 
+    if args.read_before:
+        read_len = len(data)
+        stride = min(read_len, 255)
+        start_ns = time.perf_counter_ns()
+        read_data = dev.read(start_addr, read_len, stride)
+        end_ns = time.perf_counter_ns()
+        elapsed = end_ns - start_ns
+        print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+            len(read_data), elapsed/1e9, int(len(read_data)*1e9) // elapsed))
+
+        print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(
+            start_addr, start_addr+read_len, read_data.hex(), read_data))
+
     start_ns = time.perf_counter_ns()
     dev.write(start_addr, data)
     end_ns = time.perf_counter_ns()
@@ -198,6 +211,19 @@ def write(args, dev):
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
     print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(start_addr, start_addr+len(data), data.hex(), data))
+
+    if args.read_after:
+        read_len = len(data)
+        stride = min(read_len, 255)
+        start_ns = time.perf_counter_ns()
+        read_data = dev.read(start_addr, read_len, stride)
+        end_ns = time.perf_counter_ns()
+        elapsed = end_ns - start_ns
+        print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+            len(read_data), elapsed/1e9, int(len(read_data)*1e9) // elapsed))
+
+        print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(
+            start_addr, start_addr+read_len, read_data.hex(), read_data))
 
     return 0
 
@@ -274,6 +300,8 @@ def main():
     parser_read.set_defaults(func=read)
 
     parser_write = subparsers.add_parser("write")
+    parser_write.add_argument("-b", "--read-before", action='store_true', default=False, help="Perform a read before writing. Default: False")
+    parser_write.add_argument("-a", "--read-after", action='store_true', default=False, help="Perform a read after writing. Default: False")
     parser_write.add_argument("address", type=str, help="The address to start the write to, in hexadecimal.")
     parser_write.add_argument("data", type=str, nargs="+", help="The data bytes to be written, in hexadecimal.")
     parser_write.set_defaults(func=write)
