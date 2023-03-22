@@ -90,6 +90,62 @@ class Asm236x:
     def get_fw_version_data(self):
         return self.read(0x07f0, 6)
 
+    def pcie_cfg_read(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1):
+        assert bus >> 8 == 0
+        assert dev >> 5 == 0
+        assert fn >> 3 == 0
+
+        assert cfgreq_type >> 1 == 0
+
+        self.write(0xB210, struct.pack('>III',
+            0x04000001 | (cfgreq_type << 24),
+            0x0000000f,
+            (bus << 24) | (dev << 19) | (fn << 16) | (byte_addr & 0xffc),
+        ))
+
+        # Clear timeout bit.
+        self.write(0xB296, bytes([0x01]))
+
+        # Unknown
+        self.write(0xB254, bytes([0x0f]))
+
+        # Wait for PCIe to become ready.
+        while self.read(0xB296, 1)[0] & 4 == 0:
+            continue
+
+        # Write to CSR bit 2 to start the read.
+        self.write(0xB296, bytes([0x04]))
+
+        while self.read(0xB296, 1)[0] & 2 == 0:
+            if self.read(0xB296, 1)[0] & 1:
+                # Clear timeout bit.
+                self.write(0xB296, bytes([0x01]))
+
+                raise Exception("PCIe timeout!")
+
+        # Clear done bit.
+        self.write(0xB296, bytes([0x02]))
+
+        b284 = self.read(0xB284, 1)[0]
+        #print("0xB284: 0x{:02x}".format(b284))
+        assert b284 & 0x01
+
+        completion = struct.unpack('>III', self.read(0xB224, 12))
+        #print("Completion TLP: 0x{:08x} 0x{:08x} 0x{:08x}".format(*completion))
+        assert completion[1] & 0xfff == 4
+
+        status_map = {
+            0b000: "Successful Completion (SC)",
+            0b001: "Unsupported Request (UR)",
+            0b010: "Configuration Request Retry Status (CRS)",
+            0b100: "Completer Abort (CA)",
+        }
+        status = (completion[1] >> 13) & 0x7
+        if status:
+            raise Exception("Completion status: {}".format(status_map.get(status, "Reserved (0b{:03b})".format(status))))
+
+        return struct.unpack('>I', self.read(0xB220, 4))[0]
+
 
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
@@ -308,6 +364,16 @@ def memtest(args, dev):
 
     return 0
 
+def pcie(args, dev):
+    byte_addr = int(args.address, 16)
+    dword_addr = byte_addr // 4
+
+    data = dev.pcie_cfg_read(byte_addr)
+
+    print("PCIe[0x{:04X}]: 0x{:08x}".format(dword_addr * 4, data))
+
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
@@ -352,6 +418,10 @@ def main():
     parser_memtest.add_argument("address", type=str, help="The address to start the test from, in hexadecimal.")
     parser_memtest.add_argument("length", type=int, default=1, help="The total number of bytes to test. Default: 1")
     parser_memtest.set_defaults(func=memtest)
+
+    parser_pcie = subparsers.add_parser("pcie")
+    parser_pcie.add_argument("address", type=str, help="The address to read from, in hexadecimal.")
+    parser_pcie.set_defaults(func=pcie)
 
     args = parser.parse_args()
 
