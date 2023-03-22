@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # firmware_tool.py - A tool to parse ASM236x firmware image files.
-# Copyright (C) 2022  Forest Crossman <cyrozap@gmail.com>
+# Copyright (C) 2022-2023  Forest Crossman <cyrozap@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,8 +93,8 @@ def info(filename=None, fw=None, fw_bin=None, **kwargs):
     print("T10 Product String: {}".format(fw.header.t10_product_string))
     print("Serial number: {}".format(fw.header.serial_number))
     print("Idle timer: {}".format(IDLE_TIMER_STRINGS.get(fw.header.idle_timer, "Unknown value: 0x{:x}".format(fw.header.idle_timer))))
-    print("PCIe Lanes: {}".format(PCIE_LANES.get(fw.header.pcie_lane, "Max supported by chip")))
-    print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed, (3, "8"))))
+    print("PCIe Lanes: {}".format(PCIE_LANES.get(fw.header.pcie_lane.value, "Max supported by chip")))
+    print("PCIe Speed: Gen {} ({} GT/s)".format(*PCIE_SPEEDS.get(fw.header.pcie_speed.value, (3, "8"))))
 
     header_magic_messages = {
         True: "OK (0x{:02x})".format(fw.header.magic),
