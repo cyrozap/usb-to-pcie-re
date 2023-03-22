@@ -467,10 +467,16 @@ def flash_read(args, dev):
     return 0
 
 def pcie(args, dev):
+    bdf = parse_bdf(args.bdf)
+
+    cfgreq_type = 0
+    if bdf[0] != 0:
+        cfgreq_type = 1
+
     byte_addr = int(args.address, 16)
     dword_addr = byte_addr // 4
 
-    data = dev.pcie_cfg_read(byte_addr)
+    data = dev.pcie_cfg_read(byte_addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type)
 
     print("PCIe[0x{:04X}]: 0x{:08x}".format(dword_addr * 4, data))
 
@@ -565,6 +571,7 @@ def main():
     parser_pcie_cfg_dump.set_defaults(func=pcie_cfg_dump)
 
     parser_pcie = subparsers.add_parser("pcie")
+    parser_pcie.add_argument("-s", "--bdf", type=str, default="00:00.0", help="The PCI address to send the TLP to. Default: 00:00.0")
     parser_pcie.add_argument("address", type=str, help="The address to read from, in hexadecimal.")
     parser_pcie.set_defaults(func=pcie)
 
