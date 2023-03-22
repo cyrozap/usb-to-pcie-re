@@ -193,6 +193,47 @@ class Asm236x:
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
 
+def parse_bdf(bdf):
+    bus = 0
+    dev = 0
+    fn = 0
+
+    # [[[[<domain>]:]<bus>]:][<dev>][.[<fun>]]
+
+    bdf_split_period = bdf.split('.')
+    if len(bdf_split_period) > 2:
+        raise Exception("Too many periods in BDF string \"{}\".".format(bdf))
+    if len(bdf_split_period) > 1:
+        fn_str = bdf_split_period[-1]
+        if len(fn_str) > 0:
+            try:
+                fn = int(fn_str, 16)
+            except Exception as e:
+                raise Exception("Function number \"{}\" is invalid: {}".format(fn_str, e))
+            assert fn >> 3 == 0
+
+    bd_str = bdf_split_period[0]
+    bd_str_split_colon = bd_str.split(":")
+    if len(bd_str_split_colon) > 2:
+        raise Exception("Too many colons in BDF string \"{}\".".format(bdf))
+    if len(bd_str_split_colon) > 1:
+        bus_str = bd_str_split_colon[0]
+        if len(bus_str) > 0:
+            try:
+                bus = int(bus_str, 16)
+            except Exception as e:
+                raise Exception("Bus number \"{}\" is invalid: {}".format(bus_str, e))
+
+    dev_str = bd_str_split_colon[-1]
+    if len(dev_str) > 0:
+        try:
+            dev = int(dev_str, 16)
+        except Exception as e:
+            raise Exception("Device number \"{}\" is invalid: {}".format(dev_str, e))
+        assert dev >> 5 == 0
+
+    return (bus, dev, fn)
+
 def dump(args, dev):
     start_addr = 0x0000
     read_len = 1 << 16
@@ -435,6 +476,38 @@ def pcie(args, dev):
 
     return 0
 
+def pcie_cfg_dump(args, dev):
+    bdf = parse_bdf(args.bdf)
+
+    cfgreq_type = 0
+    if bdf[0] != 0:
+        cfgreq_type = 1
+
+    buf = bytearray(4096)
+    start_ns = time.perf_counter_ns()
+    for addr in range(0, len(buf), 4):
+        struct.pack_into('<I', buf, addr, dev.pcie_cfg_read(addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type))
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    if args.output:
+        print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+            len(buf), elapsed/1e9, int(len(buf)*1e9) // elapsed))
+
+    dump = sys.stdout
+    if args.output:
+        dump = open(args.output, 'w')
+
+    dump.write("{:02x}:{:02x}.{:x} \n".format(*bdf))
+    for addr in range(0, len(buf), 16):
+        dump.write("{:03x}: {}\n".format(addr, " ".join(["{:02x}".format(b) for b in buf[addr:addr+16]])))
+    dump.write("\n")
+
+    if args.output:
+        print("Wrote config space dump to \"{}\". Use \"lspci -A dump -O dump.name={}\" to read the file.".format(
+            args.output, args.output))
+
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
@@ -485,6 +558,11 @@ def main():
     parser_flash_read.add_argument("-l", "--length", type=int, default=1, help="The total number of bytes to read from flash. Default: 1")
     parser_flash_read.add_argument("address", type=str, help="The flash address to start the read from, in hexadecimal.")
     parser_flash_read.set_defaults(func=flash_read)
+
+    parser_pcie_cfg_dump = subparsers.add_parser("pcie_cfg_dump")
+    parser_pcie_cfg_dump.add_argument("-s", "--bdf", type=str, default="00:00.0", help="The PCI address to dump the config space of. Default: 00:00.0")
+    parser_pcie_cfg_dump.add_argument("-o", "--output", type=str, default="", help="The file to write the PCI config space dump output to. Default: standard output")
+    parser_pcie_cfg_dump.set_defaults(func=pcie_cfg_dump)
 
     parser_pcie = subparsers.add_parser("pcie")
     parser_pcie.add_argument("address", type=str, help="The address to read from, in hexadecimal.")
