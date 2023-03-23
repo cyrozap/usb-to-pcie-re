@@ -10,15 +10,16 @@
 * Firmware image parser:
   * [Kaitai Struct Compiler][ksc]
   * [Kaitai Struct Python Runtime][kspr]
-* `asm236x_tool.py`:
+* `tools/asm236x_tool.py`:
   * [cython-sgio][cython-sgio]
 
 
 ### Procedure
 
-1. Install dependencies.
-2. Run `make` to generate the parser code used by `firmware_tool.py`.
-3. Run `./firmware_tool.py` on the `*.bin` firmware binary.
+1. `cd` to the `tools` directory.
+2. Install dependencies.
+3. Run `make` to generate the parser code used by `firmware_tool.py`.
+4. Run `./firmware_tool.py` on the `*.bin` firmware binary.
 
 
 ## Reverse engineering notes
