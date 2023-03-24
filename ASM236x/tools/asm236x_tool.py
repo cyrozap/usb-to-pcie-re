@@ -132,17 +132,39 @@ class Asm236x:
 
         return bytes(data)
 
-    def pcie_cfg_read(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1):
+    def pcie_cfg_req(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1, value=None):
         assert bus >> 8 == 0
         assert dev >> 5 == 0
         assert fn >> 3 == 0
 
         assert cfgreq_type >> 1 == 0
 
+        fmt_type = 0x04
+        if value is not None:
+            fmt_type = 0x44
+
+        fmt_type |= cfgreq_type
+        address = (bus << 24) | (dev << 19) | (fn << 16) | (byte_addr & 0xffc)
+
+        return self.pcie_gen_req(fmt_type, address, value)
+
+    def pcie_mem_req(self, byte_addr, value=None):
+        fmt_type = 0x00
+        if value is not None:
+            fmt_type = 0x40
+
+        address = byte_addr & 0xfffffffc
+
+        return self.pcie_gen_req(fmt_type, address, value)
+
+    def pcie_gen_req(self, fmt_type, address, value=None):
+        if value is not None:
+            self.write(0xB220, struct.pack('>I', value))
+
         self.write(0xB210, struct.pack('>III',
-            0x04000001 | (cfgreq_type << 24),
+            0x00000001 | (fmt_type << 24),
             0x0000000f,
-            (bus << 24) | (dev << 19) | (fn << 16) | (byte_addr & 0xffc),
+            address,
         ))
 
         # Clear timeout bit.
@@ -183,11 +205,12 @@ class Asm236x:
             0b100: "Completer Abort (CA)",
         }
         status = (completion[1] >> 13) & 0x7
-        if status or not b284_bit_0:
+        if status or ((fmt_type & 0xbe == 0x04) and (((value is None) and (not b284_bit_0)) or ((value is not None) and b284_bit_0))):
             raise Exception("Completion status: {}, 0xB284 bit 0: {}".format(
                 status_map.get(status, "Reserved (0b{:03b})".format(status)), b284_bit_0))
 
-        return struct.unpack('>I', self.read(0xB220, 4))[0]
+        if value is None:
+            return struct.unpack('>I', self.read(0xB220, 4))[0]
 
 
 def fw_version_bytes_to_string(version):
@@ -467,18 +490,36 @@ def flash_read(args, dev):
     return 0
 
 def pcie(args, dev):
-    bdf = parse_bdf(args.bdf)
+    value = None
+    if args.value:
+        value = int(args.value, 16)
 
-    cfgreq_type = 0
-    if bdf[0] != 0:
-        cfgreq_type = 1
+    if args.bdf:
+        mem_type = "CFG"
 
-    byte_addr = int(args.address, 16)
-    dword_addr = byte_addr // 4
+        bdf = parse_bdf(args.bdf)
 
-    data = dev.pcie_cfg_read(byte_addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type)
+        cfgreq_type = 0
+        if bdf[0] != 0:
+            cfgreq_type = 1
 
-    print("PCIe[0x{:04X}]: 0x{:08x}".format(dword_addr * 4, data))
+        byte_addr = int(args.address, 16)
+        dword_addr = byte_addr // 4
+        addr_str = "0x{:04X}".format(dword_addr * 4)
+
+        data = dev.pcie_cfg_req(byte_addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type, value=value)
+
+    else:
+        mem_type = "MEM"
+
+        byte_addr = int(args.address, 16)
+        dword_addr = byte_addr // 4
+        addr_str = "0x{:08X}".format(dword_addr * 4)
+
+        data = dev.pcie_mem_req(byte_addr, value)
+
+    if value is None:
+        print("{}[{}]: 0x{:08x}".format(mem_type, addr_str, data))
 
     return 0
 
@@ -492,7 +533,7 @@ def pcie_cfg_dump(args, dev):
     buf = bytearray(4096)
     start_ns = time.perf_counter_ns()
     for addr in range(0, len(buf), 4):
-        struct.pack_into('<I', buf, addr, dev.pcie_cfg_read(addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type))
+        struct.pack_into('<I', buf, addr, dev.pcie_cfg_req(addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type))
     end_ns = time.perf_counter_ns()
     elapsed = end_ns - start_ns
     if args.output:
@@ -571,8 +612,9 @@ def main():
     parser_pcie_cfg_dump.set_defaults(func=pcie_cfg_dump)
 
     parser_pcie = subparsers.add_parser("pcie")
-    parser_pcie.add_argument("-s", "--bdf", type=str, default="00:00.0", help="The PCI address to send the TLP to. Default: 00:00.0")
-    parser_pcie.add_argument("address", type=str, help="The address to read from, in hexadecimal.")
+    parser_pcie.add_argument("-s", "--bdf", type=str, default=None, help="The PCI address to send the Configuration Request to. Default: None (send Memory Request)")
+    parser_pcie.add_argument("-v", "--value", type=str, default=None, help="The value to write. Default: None (Read)")
+    parser_pcie.add_argument("address", type=str, help="The address to read from or write to, in hexadecimal.")
     parser_pcie.set_defaults(func=pcie)
 
     args = parser.parse_args()
