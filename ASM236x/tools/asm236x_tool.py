@@ -646,7 +646,7 @@ def main():
     parser_pcie = subparsers.add_parser("pcie")
     parser_pcie.add_argument("-s", "--bdf", type=str, default=None, help="The PCI address to send the Configuration Request to. Default: None (send Memory Request)")
     parser_pcie.add_argument("-v", "--value", type=str, default=None, help="The value to write. Default: None (Read)")
-    parser_pcie.add_argument("address", type=str, help="The address to read from or write to, in hexadecimal.")
+    parser_pcie.add_argument("address", type=str, help="The address to read from or write to, in hexadecimal. To specify the width of the data to read/write, append \".B\" (1 byte), \".W\" (2 bytes), and \".L\" (4 bytes) to the address. The default width is 4 and the specifiers are case-insensitive.")
     parser_pcie.set_defaults(func=pcie)
 
     args = parser.parse_args()
