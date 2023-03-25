@@ -587,6 +587,48 @@ def pcie_cfg_dump(args, dev):
 
     return 0
 
+def pcie_mem_dump(args, dev):
+    start_addr = int(args.address, 16)
+
+    if args.length.startswith("0x"):
+        length = int(args.length, 16)
+    else:
+        length = int(args.length)
+
+    buf = bytearray(length)
+
+    start_ns = time.perf_counter_ns()
+
+    offset = start_addr & 0x3
+    unaligned_len = 0
+    if offset:
+        unaligned_len = 4 - offset
+        for i in range(unaligned_len):
+            buf[i] = dev.pcie_mem_req(start_addr + i, size=1)
+
+    aligned_len = ((len(buf) - unaligned_len) // 4) * 4
+    for i in range(0, aligned_len, 4):
+        buf_idx = unaligned_len + i
+        struct.pack_into('<I', buf, buf_idx, dev.pcie_mem_req(start_addr + buf_idx, size=4))
+
+    remaining = len(buf) - unaligned_len - aligned_len
+    for i in range(remaining):
+        buf_idx = unaligned_len + aligned_len + i
+        buf[buf_idx] = dev.pcie_mem_req(start_addr + buf_idx, size=1)
+
+    end_ns = time.perf_counter_ns()
+    elapsed = end_ns - start_ns
+    print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
+        len(buf), elapsed/1e9, int(len(buf)*1e9) // elapsed))
+
+    dump = open(args.pcie_mem_dump_file, 'wb')
+    dump.write(buf)
+    dump.close()
+
+    print("Wrote memory dump to \"{}\".".format(args.pcie_mem_dump_file))
+
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
@@ -642,6 +684,12 @@ def main():
     parser_pcie_cfg_dump.add_argument("-s", "--bdf", type=str, default="00:00.0", help="The PCI address to dump the config space of. Default: 00:00.0")
     parser_pcie_cfg_dump.add_argument("-o", "--output", type=str, default="", help="The file to write the PCI config space dump output to. Default: standard output")
     parser_pcie_cfg_dump.set_defaults(func=pcie_cfg_dump)
+
+    parser_pcie_mem_dump = subparsers.add_parser("pcie_mem_dump")
+    parser_pcie_mem_dump.add_argument("address", type=str, help="The address to start the read from, in hexadecimal.")
+    parser_pcie_mem_dump.add_argument("length", type=str, help="The number of bytes to read, in decimal (prefix with \"0x\" for hexadecimal).")
+    parser_pcie_mem_dump.add_argument("pcie_mem_dump_file", help="The file to write the dump output to.")
+    parser_pcie_mem_dump.set_defaults(func=pcie_mem_dump)
 
     parser_pcie = subparsers.add_parser("pcie")
     parser_pcie.add_argument("-s", "--bdf", type=str, default=None, help="The PCI address to send the Configuration Request to. Default: None (send Memory Request)")
