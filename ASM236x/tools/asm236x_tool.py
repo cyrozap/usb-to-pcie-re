@@ -132,7 +132,7 @@ class Asm236x:
 
         return bytes(data)
 
-    def pcie_cfg_req(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1, value=None):
+    def pcie_cfg_req(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1, value=None, size=4):
         assert bus >> 8 == 0
         assert dev >> 5 == 0
         assert fn >> 3 == 0
@@ -144,27 +144,37 @@ class Asm236x:
             fmt_type = 0x44
 
         fmt_type |= cfgreq_type
-        address = (bus << 24) | (dev << 19) | (fn << 16) | (byte_addr & 0xffc)
+        address = (bus << 24) | (dev << 19) | (fn << 16) | (byte_addr & 0xfff)
 
-        return self.pcie_gen_req(fmt_type, address, value)
+        return self.pcie_gen_req(fmt_type, address, value, size)
 
-    def pcie_mem_req(self, byte_addr, value=None):
+    def pcie_mem_req(self, address, value=None, size=4):
         fmt_type = 0x00
         if value is not None:
             fmt_type = 0x40
 
-        address = byte_addr & 0xfffffffc
+        return self.pcie_gen_req(fmt_type, address, value, size)
 
-        return self.pcie_gen_req(fmt_type, address, value)
+    def pcie_gen_req(self, fmt_type, address, value=None, size=4):
+        assert fmt_type >> 8 == 0
+        assert size > 0 and size <= 4
 
-    def pcie_gen_req(self, fmt_type, address, value=None):
+        masked_address = address & 0xfffffffc
+        offset = address & 0x00000003
+
+        assert size + offset <= 4
+
+        byte_enable = ((1 << size) - 1) << offset
+
         if value is not None:
-            self.write(0xB220, struct.pack('>I', value))
+            assert value >> (8 * size) == 0
+            shifted_value = value << (8 * offset)
+            self.write(0xB220, struct.pack('>I', shifted_value))
 
         self.write(0xB210, struct.pack('>III',
             0x00000001 | (fmt_type << 24),
-            0x0000000f,
-            address,
+            byte_enable,
+            masked_address,
         ))
 
         # Clear timeout bit.
@@ -196,7 +206,10 @@ class Asm236x:
 
         completion = struct.unpack('>III', self.read(0xB224, 12))
         #print("Completion TLP: 0x{:08x} 0x{:08x} 0x{:08x}".format(*completion))
-        assert completion[1] & 0xfff == 4
+        if (fmt_type & 0xbe == 0x04):
+            assert completion[1] & 0xfff == 4
+        else:
+            assert completion[1] & 0xfff == size
 
         status_map = {
             0b000: "Successful Completion (SC)",
@@ -210,7 +223,10 @@ class Asm236x:
                 status_map.get(status, "Reserved (0b{:03b})".format(status)), b284_bit_0))
 
         if value is None:
-            return struct.unpack('>I', self.read(0xB220, 4))[0]
+            full_value = struct.unpack('>I', self.read(0xB220, 4))[0]
+            shifted_value = full_value >> (8 * offset)
+            masked_value = shifted_value & ((1 << (8 * size)) - 1)
+            return masked_value
 
 
 def fw_version_bytes_to_string(version):
@@ -494,6 +510,21 @@ def pcie(args, dev):
     if args.value:
         value = int(args.value, 16)
 
+    size = 4
+
+    addr_parts = args.address.split('.')
+    if len(addr_parts) == 2:
+        size = {
+            'b': 1,
+            'w': 2,
+            'l': 4,
+        }.get(addr_parts[-1].lower())
+        if not size:
+            raise ValueError("Invalid address specifier \"{}\"".format(args.address))
+    elif len(addr_parts) > 2:
+        raise ValueError("Invalid address specifier \"{}\"".format(args.address))
+    byte_addr = int(addr_parts[0], 16)
+
     if args.bdf:
         mem_type = "CFG"
 
@@ -503,23 +534,24 @@ def pcie(args, dev):
         if bdf[0] != 0:
             cfgreq_type = 1
 
-        byte_addr = int(args.address, 16)
-        dword_addr = byte_addr // 4
-        addr_str = "0x{:04X}".format(dword_addr * 4)
+        addr_str = "0x{:04X}".format(byte_addr)
 
-        data = dev.pcie_cfg_req(byte_addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type, value=value)
+        data = dev.pcie_cfg_req(byte_addr, bus=bdf[0], dev=bdf[1], fn=bdf[2], cfgreq_type=cfgreq_type, value=value, size=size)
 
     else:
         mem_type = "MEM"
 
-        byte_addr = int(args.address, 16)
-        dword_addr = byte_addr // 4
-        addr_str = "0x{:08X}".format(dword_addr * 4)
+        addr_str = "0x{:08X}".format(byte_addr)
 
-        data = dev.pcie_mem_req(byte_addr, value)
+        data = dev.pcie_mem_req(byte_addr, value, size)
 
     if value is None:
-        print("{}[{}]: 0x{:08x}".format(mem_type, addr_str, data))
+        data_str = {
+            1: "0x{:02x}",
+            2: "0x{:04x}",
+            4: "0x{:08x}",
+        }[size].format(data)
+        print("{}[{}]: {}".format(mem_type, addr_str, data_str))
 
     return 0
 
