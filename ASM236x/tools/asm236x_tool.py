@@ -23,6 +23,7 @@ import os
 import struct
 import sys
 import time
+from pathlib import Path
 
 try:
     import sgio
@@ -631,7 +632,7 @@ def pcie_mem_dump(args, dev):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--device", default="/dev/sg0", help="The SCSI/SG_IO device. Default: /dev/sg0")
+    parser.add_argument("-d", "--device", default="auto", help="The path to the ASM236x SCSI/SG_IO device. Default: auto")
 
     subparsers = parser.add_subparsers(dest="command", required=True, help="Subcommands.")
 
@@ -699,8 +700,35 @@ def main():
 
     args = parser.parse_args()
 
+    device = args.device
+    if device == "auto":
+        # Search for devices
+        for path in Path("/sys/bus/scsi/devices").iterdir():
+            try:
+                vendor = open(path.joinpath("vendor"), "rb").read()
+                if not vendor.startswith(b"ASMT"):
+                    continue
+
+                model = open(path.joinpath("model"), "rb").read()
+                if not model.startswith(b"ASM236"):
+                    continue
+
+                for sg in path.joinpath("scsi_generic").iterdir():
+                    device = str(Path("/dev", sg.parts[-1]))
+                    sys.stderr.write("Using ASM236x device at \"{}\".\n".format(device))
+                    break
+
+                if device != "auto":
+                    break
+            except FileNotFoundError:
+                continue
+
+        if device == "auto":
+            sys.stderr.write("Error: Failed to auto-detect an ASM236x device. Please specify it manually using the \"-d\" flag.\n")
+            return 1
+
     # Initialize the device object.
-    dev = Asm236x(args.device)
+    dev = Asm236x(device)
 
     return args.func(args, dev)
 
