@@ -286,8 +286,7 @@ public class Asm236xFirmwareHelper extends GhidraScript {
 
 			Address codeAddr = u32Addr.add(u32DataType.getLength());
 			if (listing.isUndefined(codeAddr, codeAddr)) {
-				listing.clearCodeUnits(codeAddr, codeAddr.add(u32DataType.getLength()-2), false);
-
+				listing.clearCodeUnits(codeAddr, codeAddr.add(2), false);
 				disassemble(codeAddr);
 
 				printf(getScriptName() + "> Disassembled code at %s.\n", codeAddr);
