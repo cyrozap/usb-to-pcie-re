@@ -400,7 +400,10 @@ def read(args, dev):
     print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
-    print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(start_addr, start_addr+read_len, data.hex(), data))
+    range_end_string = ""
+    if read_len > 1:
+        range_end_string = ":0x{:04X}".format(start_addr + read_len - 1)
+    print("XDATA[0x{:04X}{}]: {} {}".format(start_addr, range_end_string, data.hex(), data))
 
     return 0
 
@@ -418,8 +421,11 @@ def write(args, dev):
         print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
             len(read_data), elapsed/1e9, int(len(read_data)*1e9) // elapsed))
 
-        print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(
-            start_addr, start_addr+read_len, read_data.hex(), read_data))
+        range_end_string = ""
+        if read_len > 1:
+            range_end_string = ":0x{:04X}".format(start_addr + read_len - 1)
+        print("XDATA[0x{:04X}{}]: {} {}".format(
+            start_addr, range_end_string, read_data.hex(), read_data))
 
     start_ns = time.perf_counter_ns()
     dev.write(start_addr, data)
@@ -428,7 +434,10 @@ def write(args, dev):
     print("Wrote {} bytes in {:.6f} seconds ({} bytes per second).".format(
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
-    print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(start_addr, start_addr+len(data), data.hex(), data))
+    range_end_string = ""
+    if len(data) > 1:
+        range_end_string = ":0x{:04X}".format(start_addr + len(data) - 1)
+    print("XDATA[0x{:04X}{}]: {} {}".format(start_addr, range_end_string, data.hex(), data))
 
     if args.read_after:
         read_len = len(data)
@@ -440,8 +449,11 @@ def write(args, dev):
         print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
             len(read_data), elapsed/1e9, int(len(read_data)*1e9) // elapsed))
 
-        print("XDATA[0x{:04X}:0x{:04X}]: {} {}".format(
-            start_addr, start_addr+read_len, read_data.hex(), read_data))
+        range_end_string = ""
+        if read_len > 1:
+            range_end_string = ":0x{:04X}".format(start_addr + read_len - 1)
+        print("XDATA[0x{:04X}{}]: {} {}".format(
+            start_addr, range_end_string, read_data.hex(), read_data))
 
     return 0
 
@@ -502,7 +514,10 @@ def flash_read(args, dev):
     print("Read {} bytes in {:.6f} seconds ({} bytes per second).".format(
         len(data), elapsed/1e9, int(len(data)*1e9) // elapsed))
 
-    print("FLASH[0x{:06X}:0x{:06X}]: {} {}".format(start_addr, start_addr+read_len, data.hex(), data))
+    range_end_string = ""
+    if read_len > 1:
+        range_end_string = ":0x{:04X}".format(start_addr + read_len - 1)
+    print("FLASH[0x{:04X}{}]: {} {}".format(start_addr, range_end_string, data.hex(), data))
 
     return 0
 
