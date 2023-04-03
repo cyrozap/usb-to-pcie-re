@@ -48,7 +48,9 @@
       - `0xEE00-0xEFFF`: Mirror of XRAM `0xE800-0xE9FF`
       - `0xF000-0xFFFF`: 4 kB XRAM (USB/PCIe buffer?)
     - Peripherals
-      - `0xC000`: UART, same memory map as the one on the USB host controllers (but changing the divisor doesn't work for some reason...)
+      - `0xC000`: UART.
+        - Same memory map as [the one in ASMedia's USB host controllers][uart-regs].
+        - Changing the divisor doesn't appear to work.
 
 
 ### IOCrest SY-ENC40231 (ASM2364)
@@ -140,3 +142,4 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
 
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
+[uart-regs]: https://github.com/cyrozap/asmedia-xhc-re/blob/22fd32c53f7f34f50d659372334a384e269f5458/data/regs-asm1142.yaml#L700-L900
