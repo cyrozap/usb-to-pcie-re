@@ -164,6 +164,30 @@ public class Asm236xFirmwareHelper extends GhidraScript {
 		return functionAddr;
 	}
 
+	private Address findSwitchCaseFunction() throws CancelledException {
+		// Get the function address.
+		Address functionAddr = findAddressByBytesMaskAndOffset(
+			new byte[] { (byte)0xd0, (byte)0x83,
+					(byte)0xd0, (byte)0x82,
+					(byte)0xf8,
+					(byte)0xe4,
+					(byte)0x93 },
+			new byte[] { (byte)0xff, (byte)0xff,
+					(byte)0xff, (byte)0xff,
+					(byte)0xff,
+					(byte)0xff,
+					(byte)0xff },
+			0);
+		if (functionAddr == null) {
+			printf(getScriptName() + "> Failed to find switch-case function!\n");
+			return null;
+		}
+
+		printf(getScriptName() + "> Found switch-case function: %s\n", functionAddr);
+
+		return functionAddr;
+	}
+
 	private Address findU32WriteFunction() throws CancelledException {
 		// Get the function address.
 		Address functionAddr = findAddressByBytesMaskAndOffset(
@@ -298,6 +322,63 @@ public class Asm236xFirmwareHelper extends GhidraScript {
 		printf(getScriptName() + "> Defined data %d times and disassembled %d times.\n", definedCount, disassembled);
 	}
 
+	private void switchTableFunctionHelper() throws CancelledException, CodeUnitInsertionException {
+		Address functionAddr = findSwitchCaseFunction();
+		if (functionAddr == null) {
+			return;
+		}
+
+		DataTypeManager dtm = currentProgram.getDataTypeManager();
+		DataType pointerDataType = dtm.getDataType(new DataTypePath("/", "pointer"));
+		if (pointerDataType == null) {
+			printf(getScriptName() + "> Failed to find \"pointer\" data type.\n");
+			return;
+		}
+		DataType byteDataType = dtm.getDataType(new DataTypePath("/", "byte"));
+		if (byteDataType == null) {
+			printf(getScriptName() + "> Failed to find \"byte\" data type.\n");
+			return;
+		}
+		DataType ushortDataType = dtm.getDataType(new DataTypePath("/", "ushort"));
+		if (ushortDataType == null) {
+			printf(getScriptName() + "> Failed to find \"ushort\" data type.\n");
+			return;
+		}
+
+		Listing listing = currentProgram.getListing();
+		int definedCount = 0;
+
+		// Loop over all the locations where the function is called.
+		Reference[] calls = getReferencesTo(functionAddr);
+		for (Reference call : calls) {
+			Address callSite = call.getFromAddress();
+
+			Address currentAddr = callSite.add(3);
+			printf(getScriptName() + "> Parsing jump table: %s\n", currentAddr);
+			while (true) {
+				listing.clearCodeUnits(currentAddr, currentAddr.add(1), false);
+				listing.createData(currentAddr, ushortDataType);
+				if (((Scalar)listing.getDataAt(currentAddr).getValue()).getValue() == (long)0) {
+					// This is the end of the table, so create the pointer to the default case.
+					currentAddr = currentAddr.add(2);
+					listing.clearCodeUnits(currentAddr, currentAddr.add(1), false);
+					listing.createData(currentAddr, pointerDataType);
+					break;
+				}
+
+				listing.clearCodeUnits(currentAddr, currentAddr.add(2), false);
+				listing.createData(currentAddr, pointerDataType);
+				currentAddr = currentAddr.add(2);
+				listing.createData(currentAddr, byteDataType);
+				currentAddr = currentAddr.add(1);
+			}
+
+			definedCount += 1;
+		}
+
+		printf(getScriptName() + "> Found %d jump tables.\n", definedCount);
+	}
+
 	public void run() throws Exception {
 		// Get the registers we care about.
 		DPTR = currentProgram.getRegister("DPTR");
@@ -316,6 +397,7 @@ public class Asm236xFirmwareHelper extends GhidraScript {
 		DPH_addr = toAddr("SFR:83");
 
 		copyDwordFunctionHelper();
+		//switchTableFunctionHelper();
 		//addCrossReferencesForU32Writes(findCopyDwordLiteralFunction());
 		//addCrossReferencesForU32Writes(findU32WriteFunction());
 	}
