@@ -96,14 +96,14 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
 
 ### Commands
 
-- `0xE0`: Read configuration data?
+- `0xE0`: Read configuration data.
   - `B`: Image index, can be either 0 or 1.
   - `4x`: Four bytes of padding.
   - Returns: 128 bytes of the configuration data.
   - Examples:
     - `e0 00 00 00 00 00`: Read image 0
     - `e0 01 00 00 00 00`: Read image 1
-- `0xE1`: Write configuration data?
+- `0xE1`: Write configuration data.
 - `0xE2`: Flash read.
   - `B`: Unknown.
   - `>I`: Number of bytes to read from flash.
@@ -129,7 +129,16 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - Returns: Nothing.
   - Examples:
     - `e5 ff 00 07 f0 00`: Write `0xFF` to XDATA at address `0x07F0`.
-- `0xE6`
+- `0xE6`: Send NVMe Admin Command
+  - `B`: "Opcode (OPC)": 2 or 6 (only "Get Log Page" and "Identify" are supported)
+  - `x`: Padding byte.
+  - "Get Log Page" only:
+    - `B`: "Log Page Identifier (LID)"
+    - `2x`: 2 bytes of padding.
+    - `>H`: "Number of Dwords Lower (NUMDL)"
+    - `>Q`: "Log Page Offset"
+  - "Identify" only:
+    - `B`: "Controller or Namespace Structure (CNS)"
 - `0xE8`: Reset
   - `B`: The type of reset to perform. `0x00` for CPU reset, `0x01` for some
     kind of "soft"/PCIe reset?
