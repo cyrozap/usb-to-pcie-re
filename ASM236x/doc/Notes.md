@@ -33,8 +33,9 @@
       - `0x8000-0x8FFF`: 4 kB XRAM (USB/SCSI buffers?)
       - `0x9000-0x9DFF`: MMIO peripherals (USB?)
       - `0x9E00-0x9FFF`: 512 B XRAM (USB control transfer buffer)
-      - `0xA000-0xAFFF`: 4 kB XRAM
-      - `0xB000-0xB7FF`: MMIO peripherals (PCIe?)
+      - `0xA000-0xAFFF`: 4 kB XRAM, PCIe DMA address: `0x00820000` (NVMe I/O Submission Queue)
+      - `0xB000-0xB1FF`: 512 B XRAM, PCIe DMA address: `0x00800000` (NVMe Admin Submission Queue)
+      - `0xB200-0xB7FF`: MMIO peripherals (PCIe?)
       - `0xB800-0xBFFF`: 2 kB XRAM
       - `0xC000-0xCFFF`: MMIO peripherals (UART, flash controller, timers, etc.)
       - `0xD000-0xD3FF`: 1 kB XRAM
@@ -46,7 +47,7 @@
       - `0xEA00-0xEBFF`: Mirror of XRAM `0xE800-0xE9FF`
       - `0xEC00-0xEDFF`: Mirror of XRAM `0xE800-0xE9FF`
       - `0xEE00-0xEFFF`: Mirror of XRAM `0xE800-0xE9FF`
-      - `0xF000-0xFFFF`: 4 kB XRAM (USB/PCIe buffer?)
+      - `0xF000-0xFFFF`: 4 kB XRAM, PCIe DMA address: `0x00200000` (NVMe generic data buffer)
     - Peripherals
       - `0xC000`: UART.
         - Same memory map as [the one in ASMedia's USB host controllers][uart-regs].
