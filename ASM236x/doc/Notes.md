@@ -56,6 +56,7 @@
 
 ### IOCrest SY-ENC40231 (ASM2364)
 
+- 25 MHz crystal oscillator.
 - UART
   - TX can be accessed at resistor R10 on the pad nearest the ASM2364 IC.
   - RX can only be accessed on the ASM2364 IC itself.
@@ -63,6 +64,7 @@
 
 ### ORICO M2PVC3-G20 (ASM2364)
 
+- 25 MHz crystal oscillator.
 - UART
   - TX can be accessed at resistor R18 on the pad nearest the ASM2364 IC.
   - RX can only be accessed on the ASM2364 IC itself.
