@@ -13,6 +13,12 @@
 
 - CPU
   - Compatible with the MCS-51 (8051) instruction set.
+  - One clock cycle per machine cycle ("1T").
+    - Instruction cycle counts match the STCmicro STC15 series with the STC-Y5
+      8051 core, with the exception of the MOVX instructions, which each seem
+      to take between 2 and 5 clock cycles. See the instruction set summary
+      starting on page 340 of [this PDF][stc] for a list of instructions and
+      their cycle counts.
 - UART
   - 3V3
   - 921600 8N1
@@ -152,6 +158,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
     - `e8 01 00 00 00 00 00 00 00 00 00 00`
 
 
+[stc]: https://web.archive.org/web/20200305112930/http://stcmicro.com/datasheet/STC15F2K60S2-en.pdf
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
 [uart-regs]: https://github.com/cyrozap/asmedia-xhc-re/blob/22fd32c53f7f34f50d659372334a384e269f5458/data/regs-asm1142.yaml#L700-L900
