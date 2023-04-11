@@ -19,6 +19,7 @@
       to take between 2 and 5 clock cycles. See the instruction set summary
       starting on page 340 of [this PDF][stc] for a list of instructions and
       their cycle counts.
+  - Operating frequency: ~114.285714 MHz
 - UART
   - 3V3
   - 921600 8N1
