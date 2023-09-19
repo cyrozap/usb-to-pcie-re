@@ -213,6 +213,7 @@ class Asm236x:
         completion = struct.unpack('>III', self.read(0xB224, 12))
         #print("Completion TLP: 0x{:08x} 0x{:08x} 0x{:08x}".format(*completion))
         if (fmt_type & 0xbe == 0x04):
+            # Completion TLPs for configuration requests always have a byte count of 4.
             assert completion[1] & 0xfff == 4
         else:
             assert completion[1] & 0xfff == size
