@@ -188,9 +188,14 @@ class Asm236x:
         while self.read(0xB296, 1)[0] & 4 == 0:
             continue
 
-        # Write to CSR bit 2 to start the read.
+        # Write to CSR bit 2 to send the TLP.
         self.write(0xB296, bytes([0x04]))
 
+        if ((fmt_type & 0b11011111) == 0b01000000) or ((fmt_type & 0b10111000) == 0b00110000):
+            # This is a posted transaction, so there's no completion and we can return early.
+            return
+
+        # Wait for completion.
         while self.read(0xB296, 1)[0] & 2 == 0:
             if self.read(0xB296, 1)[0] & 1:
                 # Clear timeout bit.
