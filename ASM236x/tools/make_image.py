@@ -22,7 +22,7 @@ import argparse
 import struct
 import sys
 
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 CHIP_INFO = {
@@ -96,7 +96,7 @@ def gen_fw(chip : str, code : bytes):
     body_magic = CHIP_INFO[chip][0]
 
     code = bytearray(code)
-    bcd_timestamp = bytes.fromhex(datetime.utcnow().strftime('%y%m%d%H%M%S'))
+    bcd_timestamp = bytes.fromhex(datetime.now(UTC).strftime('%y%m%d%H%M%S'))
     struct.pack_into('6s', code, 0x200, bcd_timestamp)
 
     data = struct.pack('<H', len(code)) + code + bytes([body_magic, checksum(code)])
