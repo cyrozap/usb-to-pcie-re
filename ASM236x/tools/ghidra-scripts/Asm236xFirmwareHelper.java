@@ -363,11 +363,13 @@ public class Asm236xFirmwareHelper extends GhidraScript {
 					currentAddr = currentAddr.add(2);
 					listing.clearCodeUnits(currentAddr, currentAddr.add(1), false);
 					listing.createData(currentAddr, pointerDataType);
+					createFunction((Address)listing.getDataAt(currentAddr).getValue(), null);
 					break;
 				}
 
 				listing.clearCodeUnits(currentAddr, currentAddr.add(2), false);
 				listing.createData(currentAddr, pointerDataType);
+				createFunction((Address)listing.getDataAt(currentAddr).getValue(), null);
 				currentAddr = currentAddr.add(2);
 				listing.createData(currentAddr, byteDataType);
 				currentAddr = currentAddr.add(1);
