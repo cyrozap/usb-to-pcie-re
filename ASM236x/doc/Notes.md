@@ -30,6 +30,14 @@
     - ASM2364
       - RX: IC pin 87
       - TX: IC pin 86
+- I2C
+  - Pins:
+    - ASM2362
+      - Data: IC pin 2
+      - Clock: IC pin 3
+    - ASM2364
+      - Data: IC pin 5
+      - Clock: IC pin 6
 
 - Memory maps
   - ASM2364
