@@ -25,8 +25,8 @@
   - 921600 8N1
   - Pins:
     - ASM2362
-      - RX: IC pin ?
-      - TX: IC pin ?
+      - RX: IC pin 63
+      - TX: IC pin 62
     - ASM2364
       - RX: IC pin 87
       - TX: IC pin 86
