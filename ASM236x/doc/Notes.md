@@ -46,7 +46,10 @@
       - `0x6000-0x6FFF`: 4 kB of unused address space (zero-filled, read-only)
       - `0x7000-0x7FFF`: 4 kB XRAM (SPI flash controller read/write buffer)
       - `0x8000-0x8FFF`: 4 kB XRAM (USB/SCSI buffers?)
-      - `0x9000-0x9DFF`: MMIO peripherals (USB?)
+      - `0x9000-0x93FF`: MMIO peripherals (USB?)
+      - `0x9400-0x97FF`: Mirror of MMIO `0x9000-0x93FF`?
+      - `0x9800-0x9BFF`: Mirror of MMIO `0x9000-0x93FF`?
+      - `0x9C00-0x9DFF`: Mirror of MMIO `0x9000-0x91FF`?
       - `0x9E00-0x9FFF`: 512 B XRAM (USB control transfer buffer)
       - `0xA000-0xAFFF`: 4 kB XRAM, PCIe DMA address: `0x00820000` (NVMe I/O Submission Queue)
       - `0xB000-0xB1FF`: 512 B XRAM, PCIe DMA address: `0x00800000` (NVMe Admin Submission Queue)
