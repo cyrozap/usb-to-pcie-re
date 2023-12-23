@@ -20,3 +20,6 @@ wget \
 	--directory-prefix downloads \
 	--content-disposition \
 	--input-file urls.txt
+
+curl -o downloads/JEYI_TFT-ScreenTFT显示屏-黑豹.zip https://web.archive.org/web/20231223012213if_/https://cdn.shoplazza.com/2dcf436d7b82d3b29b2ba0e1456bf083.zip
+curl -o downloads/JEYI_With_Screen带显示屏i9x[1].zip https://web.archive.org/web/20231223013545if_/https://cdn.shoplazza.com/fa7dd28e3727765b4c29e90a9f677d0f.zip
