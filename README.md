@@ -9,6 +9,8 @@ There are several chips on the market that support translating USB to NVMe/PCIe:
   * [ASM2362][ASM2362]: USB 3.x Gen 2×1 to PCIe 3.x ×2
   * [ASM2364][ASM2364]: USB 3.x Gen 2×2 to PCIe 3.x ×4
   * [ASM2464PD][ASM2464PD]: USB4 Gen 3×2 / Thunderbolt 3 to PCIe 4.x ×4
+  * [ASM2464PDX][ASM2464PDX]: USB4 Gen 3×2 / Thunderbolt 3 to PCIe 4.x ×4 +
+    integrated PCIe switch with up to four downstream ports (one ×4 port, two ×2 ports, four ×1 ports, or one ×2 port + two ×1 ports)
 * JMicron
   * [JMS581][JMS581]: USB 3.x Gen 2×1 to PCIe 3.x ×2 (NVMe) / SATA 3 / SD Express
   * [JMS583][JMS583]: USB 3.x Gen 2×1 to PCIe 3.x ×2 (NVMe)
@@ -42,6 +44,7 @@ Except where otherwise stated:
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
 [ASM2464PD]: https://web.archive.org/web/20231113020255/https://www.asmedia.com.tw/product/802zX91Yw3tsFgm4/C64ZX59yu4sY1GW5
+[ASM2464PDX]: https://web.archive.org/web/20231113020241/https://www.asmedia.com.tw/product/bDFzXa0ip1YI7Wj1/C64ZX59yu4sY1GW5
 [JMS581]: https://web.archive.org/web/20210511190218if_/https://www.jmicron.com/file/download/1081/Product+Brief+of+JMS581LT.pdf
 [JMS583]: https://web.archive.org/web/20201218070451if_/https://www.jmicron.com/file/download/1012/JMS583_Product+Brief.pdf
 [JMS586A]: https://web.archive.org/web/20220703210408if_/https://www.jmicron.com/file/download/1171/Product+Brief+of+JMS586A+%28Rev.1.00%29.pdf
