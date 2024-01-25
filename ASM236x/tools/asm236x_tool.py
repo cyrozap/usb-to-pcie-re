@@ -293,6 +293,42 @@ class Asm246x(Asm2x6x):
         return bytes(data)
 
 
+def get_asm2x6x_dev(device="auto"):
+    if device == "auto":
+        # Search for devices
+        for path in Path("/sys/bus/scsi/devices").iterdir():
+            try:
+                vendor = open(path.joinpath("vendor"), "rb").read()
+                if not vendor.startswith(b"ASMT"):
+                    continue
+
+                model = open(path.joinpath("model"), "rb").read()
+                if not (model.startswith(b"ASM236") or model.startswith(b"ASM246")):
+                    continue
+
+                for sg in path.joinpath("scsi_generic").iterdir():
+                    device = str(Path("/dev", sg.parts[-1]))
+                    sys.stderr.write("Using {} device at \"{}\".\n".format(model.split(b' ')[0].decode('utf-8'), device))
+                    break
+
+                if device != "auto":
+                    break
+            except FileNotFoundError:
+                continue
+
+        if device == "auto":
+            return None
+
+    # Initialize the device object.
+    dev = Asm236x(device)
+    try:
+        # This will fail if the device is an ASM246x
+        dev.get_fw_version_data()
+    except sgio.CheckConditionError:
+        dev = Asm246x(device)
+
+    return dev
+
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
 
@@ -778,40 +814,10 @@ def main():
 
     args = parser.parse_args()
 
-    device = args.device
-    if device == "auto":
-        # Search for devices
-        for path in Path("/sys/bus/scsi/devices").iterdir():
-            try:
-                vendor = open(path.joinpath("vendor"), "rb").read()
-                if not vendor.startswith(b"ASMT"):
-                    continue
-
-                model = open(path.joinpath("model"), "rb").read()
-                if not (model.startswith(b"ASM236") or model.startswith(b"ASM246")):
-                    continue
-
-                for sg in path.joinpath("scsi_generic").iterdir():
-                    device = str(Path("/dev", sg.parts[-1]))
-                    sys.stderr.write("Using {} device at \"{}\".\n".format(model.split(b' ')[0].decode('utf-8'), device))
-                    break
-
-                if device != "auto":
-                    break
-            except FileNotFoundError:
-                continue
-
-        if device == "auto":
-            sys.stderr.write("Error: Failed to auto-detect an ASM2x6x device. Please specify it manually using the \"-d\" flag.\n")
-            return 1
-
-    # Initialize the device object.
-    dev = Asm236x(device)
-    try:
-        # This will fail if the device is an ASM246x
-        dev.get_fw_version_data()
-    except sgio.CheckConditionError:
-        dev = Asm246x(device)
+    dev = get_asm2x6x_dev(args.device)
+    if not dev:
+        sys.stderr.write("Error: Failed to auto-detect an ASM2x6x device. Please specify it manually using the \"-d\" flag.\n")
+        return 1
 
     return args.func(args, dev)
 
