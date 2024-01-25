@@ -239,6 +239,59 @@ class Asm236x(Asm2x6x):
             masked_value = shifted_value & ((1 << (8 * size)) - 1)
             return masked_value
 
+class Asm246x(Asm2x6x):
+    def __init__(self, dev_path):
+        super().__init__(dev_path)
+
+    def flash_dump(self, read_len):
+        first_read_len = read_len
+        second_read_len = 0
+        if read_len > 0x10000:
+            first_read_len = 0xff00
+            second_read_len = read_len - first_read_len
+
+        cdb = struct.pack('>BBI', 0xe2, 0x50, first_read_len)
+        first_data = bytearray(first_read_len)
+        ret = sgio.execute(self._file, cdb, None, first_data)
+        assert ret == 0
+
+        time.sleep(1)
+
+        data = bytes(first_data)
+        if second_read_len:
+            cdb = struct.pack('>BBI', 0xe2, 0xd0, second_read_len)
+            second_data = bytearray(second_read_len)
+            ret = sgio.execute(self._file, cdb, None, second_data)
+            assert ret == 0
+
+            time.sleep(1)
+
+            data += bytes(second_data)
+
+        return data
+
+    def read(self, start_addr, read_len, stride=255):
+        data = bytearray(read_len)
+
+        for i in range(0, read_len, stride):
+            remaining = read_len - i
+            buf_len = min(stride, remaining)
+
+            current_addr = start_addr + i
+            assert current_addr >> 17 == 0
+            current_addr &= 0x01ffff
+            current_addr |= 0x500000
+
+            cdb = struct.pack('>BBBHB', 0xe4, buf_len, current_addr >> 16, current_addr & 0xffff, 0x00)
+
+            buf = bytearray(buf_len)
+            ret = sgio.execute(self._file, cdb, None, buf)
+            assert ret == 0
+
+            data[i:i+buf_len] = buf
+
+        return bytes(data)
+
 
 def fw_version_bytes_to_string(version):
     return "{:02X}{:02X}{:02X}_{:02X}_{:02X}_{:02X}".format(*version)
@@ -735,12 +788,12 @@ def main():
                     continue
 
                 model = open(path.joinpath("model"), "rb").read()
-                if not model.startswith(b"ASM236"):
+                if not (model.startswith(b"ASM236") or model.startswith(b"ASM246")):
                     continue
 
                 for sg in path.joinpath("scsi_generic").iterdir():
                     device = str(Path("/dev", sg.parts[-1]))
-                    sys.stderr.write("Using ASM236x device at \"{}\".\n".format(device))
+                    sys.stderr.write("Using {} device at \"{}\".\n".format(model.split(b' ')[0].decode('utf-8'), device))
                     break
 
                 if device != "auto":
@@ -749,11 +802,16 @@ def main():
                 continue
 
         if device == "auto":
-            sys.stderr.write("Error: Failed to auto-detect an ASM236x device. Please specify it manually using the \"-d\" flag.\n")
+            sys.stderr.write("Error: Failed to auto-detect an ASM2x6x device. Please specify it manually using the \"-d\" flag.\n")
             return 1
 
     # Initialize the device object.
     dev = Asm236x(device)
+    try:
+        # This will fail if the device is an ASM246x
+        dev.get_fw_version_data()
+    except sgio.CheckConditionError:
+        dev = Asm246x(device)
 
     return args.func(args, dev)
 
