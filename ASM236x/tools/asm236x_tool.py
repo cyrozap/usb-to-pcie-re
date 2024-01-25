@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # asm236x_tool.py - A tool to interact with ASM236x devices over USB.
-# Copyright (C) 2022-2023  Forest Crossman <cyrozap@gmail.com>
+# Copyright (C) 2022-2024  Forest Crossman <cyrozap@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,9 +32,16 @@ except ModuleNotFoundError:
     sys.exit(1)
 
 
-class Asm236x:
+class Asm2x6x:
     def __init__(self, dev_path):
         self._file = os.fdopen(os.open(dev_path, os.O_RDWR | os.O_NONBLOCK))
+
+    def get_fw_version_data(self):
+        return self.read(0x07f0, 6)
+
+class Asm236x(Asm2x6x):
+    def __init__(self, dev_path):
+        super().__init__(dev_path)
 
     def flash_dump(self, read_len):
         data = bytearray(read_len)
@@ -87,9 +94,6 @@ class Asm236x:
         cdb = bytes.fromhex("e8 00 00 00 00 00 00 00 00 00 00 00")
         ret = sgio.execute(self._file, cdb, None, None)
         assert ret == 0
-
-    def get_fw_version_data(self):
-        return self.read(0x07f0, 6)
 
     def flash_read(self, start_addr, read_len, stride=128):
         data = bytearray(read_len)
