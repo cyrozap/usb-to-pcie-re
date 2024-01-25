@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: 0BSD OR CC0-1.0
 
-# Copyright (C) 2023 by Forest Crossman <cyrozap@gmail.com>
+# Copyright (C) 2023-2024 by Forest Crossman <cyrozap@gmail.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for
 # any purpose with or without fee is hereby granted.
@@ -16,6 +16,9 @@
 
 # Find all ASMedia ASM236x USB devices
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="174c", ATTRS{idProduct}=="236[0-9]", ENV{IS_ASM236X}="TRUE"
+
+# Seagate FireCuda Gaming SSD (ASM2364)
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0bc2", ATTRS{idProduct}=="aa1a", ENV{IS_ASM236X}="TRUE"
 
 # Enable user access to the ASM236x SCSI device
 ENV{IS_ASM236X}=="TRUE", KERNEL=="sg[0-9]*", SUBSYSTEMS=="scsi_generic", MODE="0666"
