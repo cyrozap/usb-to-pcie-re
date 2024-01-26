@@ -10,7 +10,7 @@
 * Firmware image parser:
   * [Kaitai Struct Compiler][ksc]
   * [Kaitai Struct Python Runtime][kspr]
-* `tools/asm236x_tool.py`:
+* `tools/asm2x6x_tool.py`:
   * [cython-sgio][cython-sgio]
 
 

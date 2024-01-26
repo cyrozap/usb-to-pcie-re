@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# asm236x_tool.py - A tool to interact with ASM236x devices over USB.
+# asm2x6x_tool.py - A tool to interact with ASM2x6x devices over USB.
 # Copyright (C) 2022-2024  Forest Crossman <cyrozap@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -746,7 +746,7 @@ def pcie_mem_dump(args, dev):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--device", default="auto", help="The path to the ASM236x SCSI/SG_IO device. Default: auto")
+    parser.add_argument("-d", "--device", default="auto", help="The path to the ASM2x6x SCSI/SG_IO device. Default: auto")
 
     subparsers = parser.add_subparsers(dest="command", required=True, help="Subcommands.")
 
