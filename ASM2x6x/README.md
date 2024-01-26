@@ -1,4 +1,4 @@
-# ASM236x Reverse Engineering
+# ASM2x6x Reverse Engineering
 
 
 ## Quick start
