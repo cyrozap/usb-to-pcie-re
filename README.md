@@ -25,8 +25,7 @@ This project will focus on the ASMedia controllers, for now.
 
 ## Sub-projects
 
-* [ASM236x](ASM236x)
-* [ASM2464](ASM2464)
+* [ASM2x6x](ASM2x6x)
 * [RTL921x](RTL921x)
 
 
