@@ -138,6 +138,8 @@ class Asm236x(Asm2x6x):
         return bytes(data)
 
     def pcie_cfg_req(self, byte_addr, bus=1, dev=0, fn=0, cfgreq_type=1, value=None, size=4):
+        assert byte_addr >> 12 == 0
+
         assert bus >> 8 == 0
         assert dev >> 5 == 0
         assert fn >> 3 == 0
