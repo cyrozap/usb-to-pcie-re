@@ -30,6 +30,9 @@
     - ASM2364
       - RX: IC pin 87
       - TX: IC pin 86
+    - ASM2464PD(X)
+      - RX: IC ball A21
+      - TX: IC ball B21
 - I2C
   - Pins:
     - ASM2362
@@ -86,6 +89,15 @@
 - UART
   - TX can be accessed at resistor R18 on the pad nearest the ASM2364 IC.
   - RX can only be accessed on the ASM2364 IC itself.
+
+
+### Blueendless M280U4A (ASM2464PD)
+
+- UART header
+  - Pin 1: Unknown
+  - Pin 2: Ground
+  - Pin 3: TX
+  - Pin 4: Unknown
 
 
 ## USB protocol
