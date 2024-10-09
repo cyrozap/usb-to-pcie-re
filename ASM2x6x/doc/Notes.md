@@ -93,6 +93,7 @@
 
 ### Blueendless M280U4A (ASM2464PD)
 
+- 25 MHz crystal oscillator.
 - UART header
   - Pin 1: Unknown
   - Pin 2: Ground
