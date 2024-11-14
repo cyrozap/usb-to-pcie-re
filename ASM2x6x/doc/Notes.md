@@ -1,12 +1,14 @@
-# ASM236x Reverse Engineering Notes
+# ASM2x6x Reverse Engineering Notes
 
 
 ## Feature comparison
 
-| IC | USB VID:PID | USB 3 Generation × Lanes | PCIe Version × Lanes | IC Package |
-| --- | --- | --- | --- | --- |
-| [ASM2362][ASM2362] | 174c:2362 | Gen 2×1 | PCIe 3.x ×2 | QFN-64 |
-| [ASM2364][ASM2364] | 174c:236? | Gen 2×2 | PCIe 3.x ×4 | QFN-88 |
+| IC | USB VID:PID | USB SuperSpeed Generation × Lanes | USB4 / Thunderbolt 3 | PCIe Version × Lanes | IC Package |
+| --- | --- | --- | --- | --- | --- |
+| [ASM2362][ASM2362] | 174c:2362 | Gen 2×1 | No | PCIe 3.x ×2 | QFN-64 |
+| [ASM2364][ASM2364] | 174c:236? | Gen 2×2 | No | PCIe 3.x ×4 | QFN-88 |
+| [ASM2464PD][ASM2464PD] | 174c:246? | Gen 3×2 | Yes | PCIe 4.x ×4 | FCCSP |
+| [ASM2464PDX][ASM2464PDX] | 174c:246? | Gen 3×2 | Yes | PCIe 4.x ×4 | FCCSP |
 
 
 ## Hardware information
@@ -20,6 +22,7 @@
       starting on page 340 of [this PDF][stc] for a list of instructions and
       their cycle counts.
   - Operating frequency: ~114.285714 MHz
+    - TODO: Confirm frequency of ASM2464PD(X) CPU.
 - UART
   - 3V3
   - 921600 8N1
@@ -186,4 +189,6 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
 [stc]: https://web.archive.org/web/20200305112930/http://stcmicro.com/datasheet/STC15F2K60S2-en.pdf
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
+[ASM2464PD]: https://web.archive.org/web/20231113020255/https://www.asmedia.com.tw/product/802zX91Yw3tsFgm4/C64ZX59yu4sY1GW5
+[ASM2464PDX]: https://web.archive.org/web/20231113020241/https://www.asmedia.com.tw/product/bDFzXa0ip1YI7Wj1/C64ZX59yu4sY1GW5
 [uart-regs]: https://github.com/cyrozap/asmedia-xhc-re/blob/22fd32c53f7f34f50d659372334a384e269f5458/data/regs-asm1142.yaml#L700-L900
