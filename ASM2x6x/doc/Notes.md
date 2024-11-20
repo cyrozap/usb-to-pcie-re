@@ -94,6 +94,11 @@
   - RX can only be accessed on the ASM2364 IC itself.
 
 
+### Seagate FireCuda Gaming SSD (ASM2364)
+
+- I2C bus is connected to an LED controller ([source][seagate-faze]).
+
+
 ### Blueendless M280U4A (ASM2464PD)
 
 - 25 MHz crystal oscillator.
@@ -186,9 +191,31 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
     - `e8 01 00 00 00 00 00 00 00 00 00 00`
 
 
+#### Seagate FireCuda Gaming SSD Commands
+
+- `0xD1`: Get LED
+  - `6B`: Magic: "GetLed"
+  - `B`: Command? Written to `0xE800`. Seen: 0, 1, 2, 3, 4, 5
+  - `B`: I2C mode? Written to `0xC871`. Seen: `0x03`, `0x20`, `0xff`
+  - `x`: Padding byte.
+  - `B`: Read length. Written to `0xE801` and `0xC874`.
+  - `5x`: 5 bytes of padding.
+  - Returns: "Read length" bytes of data.
+- `0xD2`: Set LED
+  - `6B`: Magic: "SetLed"
+  - `B`: Command? Written to `0xE800`.
+  - `B`: I2C mode? `0x21`. Written to `0xC871`.
+  - `x`: Padding byte.
+  - `B`: Write length. Written to `0xE801`.
+  - `5x`: 5 bytes of padding.
+  - Payload: "Write length" bytes of data.
+  - Returns: Nothing.
+
+
 [stc]: https://web.archive.org/web/20200305112930/http://stcmicro.com/datasheet/STC15F2K60S2-en.pdf
 [ASM2362]: https://web.archive.org/web/20220608104342/https://www.asmedia.com.tw/product/Ee1YQF9sX7yyajH5/C5cYq34qpByQ6jm6
 [ASM2364]: https://web.archive.org/web/20220703204756/https://www.asmedia.com.tw/product/BD5YqfdsPDqXFqi3/BF2yq24XzDuS5Tr4
 [ASM2464PD]: https://web.archive.org/web/20231113020255/https://www.asmedia.com.tw/product/802zX91Yw3tsFgm4/C64ZX59yu4sY1GW5
 [ASM2464PDX]: https://web.archive.org/web/20231113020241/https://www.asmedia.com.tw/product/bDFzXa0ip1YI7Wj1/C64ZX59yu4sY1GW5
 [uart-regs]: https://github.com/cyrozap/asmedia-xhc-re/blob/22fd32c53f7f34f50d659372334a384e269f5458/data/regs-asm1142.yaml#L700-L900
+[seagate-faze]: https://web.archive.org/web/20241120033537/https://docs.zephyrproject.org/latest/boards/seagate/faze/doc/index.html
