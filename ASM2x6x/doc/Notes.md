@@ -195,7 +195,13 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
 
 - `0xD1`: Get LED
   - `6B`: Magic: "GetLed"
-  - `B`: Command? Written to `0xE800`. Seen: 0, 1, 2, 3, 4, 5
+  - `B`: LED index. Written to `0xE800`. Seen: 0, 1, 2, 3, 4, 5
+    - 0: Unknown
+    - 1: Status LED
+    - 2: RGB LED 0 (the LED furthest from the Seagate logo)
+    - 3: RGB LED 1
+    - 4: RGB LED 2
+    - 5: RGB LED 3 (the LED closest to the Seagate logo)
   - `B`: I2C mode? Written to `0xC871`. Seen: `0x03`, `0x20`, `0xff`
   - `x`: Padding byte.
   - `B`: Read length. Written to `0xE801` and `0xC874`.
@@ -203,7 +209,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - Returns: "Read length" bytes of data.
 - `0xD2`: Set LED
   - `6B`: Magic: "SetLed"
-  - `B`: Command? Written to `0xE800`.
+  - `B`: LED index. Written to `0xE800`.
   - `B`: I2C mode? `0x21`. Written to `0xC871`.
   - `x`: Padding byte.
   - `B`: Write length. Written to `0xE801`.
