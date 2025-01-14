@@ -206,7 +206,7 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - `x`: Padding byte.
   - `B`: Read length. Written to `0xE801` and `0xC874`.
   - `5x`: 5 bytes of padding.
-  - Returns: "Read length" bytes of data.
+  - Returns: "Read length" bytes of data. See "Data Format" for details.
 - `0xD2`: Set LED
   - `6B`: Magic: "SetLed"
   - `B`: LED index. Written to `0xE800`.
@@ -214,8 +214,27 @@ sg_raw -r 1 /dev/sg0 c0 01 ca fe 00 00
   - `x`: Padding byte.
   - `B`: Write length. Written to `0xE801`.
   - `5x`: 5 bytes of padding.
-  - Payload: "Write length" bytes of data.
+  - Payload: "Write length" bytes of data. See "Data Format" for details.
   - Returns: Nothing.
+
+
+##### Data Format
+
+Data format depends on the first byte--the mode index.
+
+- Mode 4: Custom (Length: 39 bytes)
+  - `B`: Mode: Custom (0x04)
+  - `B`: Global brightness: 0-255
+  - `B`: Number of states for the LED: 1-8
+    - If this number `N` is less than eight, only the first `N` states are used. The rest are ignored.
+  - `B`: State hold time, in tenths of one second: 0-255
+  - `x`: Padding byte.
+  - `B`: State transition time, in tenths of one second: 0-255
+  - `8 * 4B`: The eight LED states. Each four-byte state has the following format:
+    - `B`: Red: 0-255
+    - `B`: Green: 0-255
+    - `B`: Blue: 0-255
+    - `B`: Brightness: 0-255
 
 
 [stc]: https://web.archive.org/web/20200305112930/http://stcmicro.com/datasheet/STC15F2K60S2-en.pdf
