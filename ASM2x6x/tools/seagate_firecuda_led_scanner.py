@@ -64,6 +64,7 @@ def main() -> None:
         # - State hold time (tenths of one second): 0-255
         # - Padding byte: 0
         # - State transition time (tenths of one second): 0-255
+        # - Padding byte: 0
         # - LED states (1-8):
         #   - Red: 0-255
         #   - Green: 0-255
