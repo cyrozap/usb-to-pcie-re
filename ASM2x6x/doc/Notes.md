@@ -230,6 +230,7 @@ Data format depends on the first byte--the mode index.
   - `B`: State hold time, in tenths of one second: 0-255
   - `x`: Padding byte.
   - `B`: State transition time, in tenths of one second: 0-255
+  - `x`: Padding byte.
   - `8 * 4B`: The eight LED states. Each four-byte state has the following format:
     - `B`: Red: 0-255
     - `B`: Green: 0-255
