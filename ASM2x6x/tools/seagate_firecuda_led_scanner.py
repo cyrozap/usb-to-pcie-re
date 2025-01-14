@@ -44,6 +44,27 @@ def main():
 
         pattern = [((0xff << 24) | brightness) for brightness in pattern]
 
+        # Command format:
+        # - Command: 0xD2
+        # - Magic: "SetLed"
+        # - LED index: 2-5
+        # - I2C mode (?): 0x21
+        # - Padding byte: 0
+        # - Data size: 39 bytes
+        # - Padding bytes: Five null bytes
+        #
+        # Data format:
+        # - Mode: Custom (0x04)
+        # - Global brightness: 0-255
+        # - Number of states for the LED: 1-8
+        # - State hold time (tenths of one second): 0-255
+        # - Padding byte: 0
+        # - State transition time (tenths of one second): 0-255
+        # - LED states (1-8):
+        #   - Red: 0-255
+        #   - Green: 0-255
+        #   - Blue: 0-255
+        #   - Brightness: 0-255
         print("echo {} | xxd -r -ps | sg_raw -s 39 /dev/sg0 d2 53 65 74 4c 65 64 {:02x} 21 00 27 00 00 00 00 00".format(
             struct.pack('>BBBBxBxIIIIIIII', 4, BRIGHTNESS, 8, HOLD_TIME, TRANSITION_TIME, *pattern).hex(), 2+i))
 
