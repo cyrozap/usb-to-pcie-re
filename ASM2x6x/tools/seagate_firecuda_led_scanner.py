@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: 0BSD
 
-# Copyright (C) 2023 by Forest Crossman <cyrozap@gmail.com>
+# Copyright (C) 2023, 2025 by Forest Crossman <cyrozap@gmail.com>
 #
 # Permission to use, copy, modify, and/or distribute this software for
 # any purpose with or without fee is hereby granted.
@@ -20,8 +20,8 @@ import struct
 
 
 BRIGHTNESS = 255
-HOLD_TIME = 1
-TRANSITION_TIME = 1
+HOLD_TIME = 0
+TRANSITION_TIME = 2
 
 #LEVELS = (0, 0, 0, 255)
 #LEVELS = (0x00, 0x55, 0xaa, 0xff)
