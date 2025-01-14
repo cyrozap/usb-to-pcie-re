@@ -19,33 +19,34 @@
 import struct
 
 
-BRIGHTNESS = 255
-HOLD_TIME = 0
-TRANSITION_TIME = 2
+BRIGHTNESS: int = 255
+HOLD_TIME: int = 0
+TRANSITION_TIME: int = 2
 
-#LEVELS = (0, 0, 0, 255)
-#LEVELS = (0x00, 0x55, 0xaa, 0xff)
-#LEVELS = (0, 22, 61, 255)
-LEVELS = (0, 28, 113, 255)
-#LEVELS = (0, 0, 17, 255)
+#LEVELS: tuple[int, int, int, int] = (0, 0, 0, 255)
+#LEVELS: tuple[int, int, int, int] = (0x00, 0x55, 0xaa, 0xff)
+#LEVELS: tuple[int, int, int, int] = (0, 22, 61, 255)
+LEVELS: tuple[int, int, int, int] = (0, 28, 113, 255)
+#LEVELS: tuple[int, int, int, int] = (0, 0, 17, 255)
 
-LEVEL_PATTERNS = (
+LEVEL_PATTERNS: tuple[tuple[int, int, int, int], tuple[int, int, int, int]] = (
     (LEVELS[3], LEVELS[2], LEVELS[1], LEVELS[0]),
     (LEVELS[2], LEVELS[3], LEVELS[2], LEVELS[1]),
 )
 
 
-def main():
+def main() -> None:
     for i in range(4):
+        brightness_pattern: tuple[int, int, int, int, int, int, int, int]
         if i < 2:
-            pattern = LEVEL_PATTERNS[i] + LEVEL_PATTERNS[i][::-1]
+            brightness_pattern = LEVEL_PATTERNS[i] + LEVEL_PATTERNS[i][::-1]
         else:
-            pattern = LEVEL_PATTERNS[3-i][::-1] + LEVEL_PATTERNS[3-i]
+            brightness_pattern = LEVEL_PATTERNS[3-i][::-1] + LEVEL_PATTERNS[3-i]
 
-        red = 255
-        green = 0
-        blue = 0
-        pattern = [((red << 24) | (green << 16) | (blue << 8) | brightness) for brightness in pattern]
+        red: int = 255
+        green: int = 0
+        blue: int = 0
+        color_pattern: list[int] = [((red << 24) | (green << 16) | (blue << 8) | brightness) for brightness in brightness_pattern]
 
         # Command format:
         # - Command: 0xD2
@@ -69,7 +70,7 @@ def main():
         #   - Blue: 0-255
         #   - Brightness: 0-255
         print("echo {} | xxd -r -ps | sg_raw -s 39 /dev/sg0 d2 53 65 74 4c 65 64 {:02x} 21 00 27 00 00 00 00 00".format(
-            struct.pack('>BBBBxBxIIIIIIII', 4, BRIGHTNESS, 8, HOLD_TIME, TRANSITION_TIME, *pattern).hex(), 2+i))
+            struct.pack('>BBBBxBxIIIIIIII', 4, BRIGHTNESS, 8, HOLD_TIME, TRANSITION_TIME, *color_pattern).hex(), 2+i))
 
 
 if __name__ == "__main__":
