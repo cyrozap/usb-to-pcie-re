@@ -42,7 +42,10 @@ def main():
         else:
             pattern = LEVEL_PATTERNS[3-i][::-1] + LEVEL_PATTERNS[3-i]
 
-        pattern = [((0xff << 24) | brightness) for brightness in pattern]
+        red = 255
+        green = 0
+        blue = 0
+        pattern = [((red << 24) | (green << 16) | (blue << 8) | brightness) for brightness in pattern]
 
         # Command format:
         # - Command: 0xD2
